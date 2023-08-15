@@ -1,0 +1,6 @@
+[submodule "graphics/extern/glfw"]
+	path = graphics/extern/glfw
+	url = https://github.com/ebanjo-2/glfw
+[submodule "graphics/extern/imgui"]
+	path = graphics/extern/imgui
+	url = https://github.com/ocornut/imgui
