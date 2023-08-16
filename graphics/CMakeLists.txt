@@ -5,11 +5,21 @@ set(GRAPHICS_CORE_SOURCES
     src/core/vulkan/vk_debug.h    
     
     src/core/vulkan/instance.h
-    src/core/vulkan/instance.cpp 
+    src/core/vulkan/instance.cpp
+    
+    src/core/vulkan/logical_device.h
+    src/core/vulkan/logical_device.cpp
 )
 
 set(GRAPHICS_WINDOW_SOURCES
-	
+    src/window/glfw/window_api.h
+    src/window/glfw/window_api.cpp
+
+    src/window/glfw/monitor.h
+    src/window/glfw/monitor.cpp
+
+    src/window/glfw/window.h
+    src/window/glfw/window.cpp
 )
 
 set(GRAPHICS_RENDERER_SOURCES

@@ -32,7 +32,7 @@ namespace undicht {
             return _instance;
         }
 
-        VkPhysicalDevice Instance::chooseGPU(const VkSurfaceKHR& surface) const {
+        VkPhysicalDevice Instance::chooseGPU() const {
 
             // querying for available gpus
             unsigned physical_device_count;

@@ -21,7 +21,7 @@ namespace undicht {
             void cleanUp();
 
             const VkInstance& getInstance() const;
-            VkPhysicalDevice chooseGPU(const VkSurfaceKHR& surface) const;
+            VkPhysicalDevice chooseGPU() const;
 
         protected:
             // choosing a physical device

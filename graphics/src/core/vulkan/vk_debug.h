@@ -3,6 +3,7 @@
 
 #include "debug.h"
 #include <vulkan/vulkan.h>
+#include <vulkan/vk_enum_string_helper.h>
 
 // copied from: https://vkguide.dev/docs/chapter-1/vulkan_init_code/
 // we want to immediately abort when there is an error. 
@@ -13,7 +14,7 @@
 		VkResult err = x;                                           \
 		if (err)                                                    \
 		{                                                           \
-			UND_ERROR << "Vulkan: " << err << "\n";                 \
+			UND_ERROR << "Vulkan: " << string_VkResult(err) << "\n";                 \
 			abort();                                                \
 		}                                                           \
 	} while (0)
