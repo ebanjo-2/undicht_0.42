@@ -1,15 +1,14 @@
 #define VMA_IMPLEMENTATION
 #include "vk_mem_alloc.h"
 
-#include "vma_global_allocator.h"
+#include "vulkan_memory_allocator.h"
 
 namespace undicht {
 
     namespace vma {
 
-        VmaAllocator GlobalAllocator::global_allocator;
 
-        void GlobalAllocator::init(VkInstance instance, VkDevice device, VkPhysicalDevice physical_device) {
+        void VulkanMemoryAllocator::init(VkInstance instance, VkDevice device, VkPhysicalDevice physical_device) {
             
             VmaAllocatorCreateInfo info{};
             info.device = device;
@@ -24,17 +23,17 @@ namespace undicht {
             info.pVulkanFunctions = NULL; // documentation says can be null, so it is
             info.vulkanApiVersion = VK_API_VERSION_1_3; // optional
 
-            vmaCreateAllocator(&info, &global_allocator);
+            vmaCreateAllocator(&info, &_allocator);
         }
 
-		void GlobalAllocator::cleanUp() {
+		void VulkanMemoryAllocator::cleanUp() {
 
-            vmaDestroyAllocator(global_allocator);
+            vmaDestroyAllocator(_allocator);
         }
 
-        VmaAllocator& GlobalAllocator::get() {
+        VmaAllocator& VulkanMemoryAllocator::getVmaAllocator() {
 
-            return global_allocator;
+            return _allocator;
         }
 
     } // vma

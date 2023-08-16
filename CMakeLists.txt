@@ -21,7 +21,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 add_subdirectory(core)
 add_subdirectory(graphics)
 #add_subdirectory(tools)
-#add_subdirectory(engine)
+add_subdirectory(engine)
 
 # adding tests
 add_subdirectory(tests)

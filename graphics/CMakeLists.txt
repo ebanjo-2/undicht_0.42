@@ -9,6 +9,16 @@ set(GRAPHICS_CORE_SOURCES
     
     src/core/vulkan/logical_device.h
     src/core/vulkan/logical_device.cpp
+    
+    src/core/vulkan/swap_chain.h
+    src/core/vulkan/swap_chain.cpp
+    
+    src/core/vulkan/image_view.h
+    src/core/vulkan/image_view.cpp
+
+    src/core/vulkan/formats.h
+    src/core/vulkan/formats.cpp
+
 )
 
 set(GRAPHICS_WINDOW_SOURCES

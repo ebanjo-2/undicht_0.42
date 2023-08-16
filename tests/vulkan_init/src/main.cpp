@@ -44,7 +44,7 @@ int main() {
     glfw_window.close();
     vk_instance.cleanUp();
     window_api.cleanUp();
-    UND_LOG << "Cleanup Successfull\n";
+    UND_LOG << "Cleanup Successful\n";
 
     UND_LOG << "All Tests for vulkan initialization passed!\n";
     return 0;

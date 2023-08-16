@@ -332,7 +332,6 @@ namespace undicht {
             return info;
         }
 
-
     }
 
 } // undicht
