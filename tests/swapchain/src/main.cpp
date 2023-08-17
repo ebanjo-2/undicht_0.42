@@ -18,7 +18,8 @@ int main() {
     // initializing the engine and opening a window
     Engine undicht_engine;
     undicht_engine.init();
-    Window glfw_window(undicht_engine.getVulkanInstance().getInstance(), "Swapchain Test");
+    Window glfw_window;
+    glfw_window.open(undicht_engine.getVulkanInstance().getInstance(), "Swapchain Test");
     LogicalDevice device;
     device.init(undicht_engine.getVulkanInstance().chooseGPU(), glfw_window.getSurface());
 

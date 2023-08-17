@@ -142,7 +142,7 @@ namespace undicht {
         void LogicalDevice::presentOnPresentQueue(const VkSwapchainKHR& swap_chain, uint32_t image_index, const std::vector<VkSemaphore>& wait_on) {
 
             VkPresentInfoKHR info = createPresentInfo(swap_chain, image_index, wait_on);
-            VK_ASSERT(vkQueuePresentKHR(_present_queue, &info));
+            VK_CHECK(vkQueuePresentKHR(_present_queue, &info));
         }
 
         void LogicalDevice::waitGraphicsQueueIdle() const {

@@ -18,7 +18,28 @@ set(GRAPHICS_CORE_SOURCES
 
     src/core/vulkan/formats.h
     src/core/vulkan/formats.cpp
-
+    
+    src/core/vulkan/command_buffer.h
+    src/core/vulkan/command_buffer.cpp
+    
+    src/core/vulkan/render_pass.h
+    src/core/vulkan/render_pass.cpp
+    
+    src/core/vulkan/frame_buffer.h
+    src/core/vulkan/frame_buffer.cpp
+    
+    src/core/vulkan/pipeline.h
+    src/core/vulkan/pipeline.cpp
+    
+    src/core/vulkan/semaphore.h
+    src/core/vulkan/semaphore.cpp
+    
+    src/core/vulkan/fence.h
+    src/core/vulkan/fence.cpp
+    
+    src/core/vulkan/shader_module.h
+    src/core/vulkan/shader_module.cpp
+    
 )
 
 set(GRAPHICS_WINDOW_SOURCES
@@ -57,7 +78,6 @@ target_include_directories(graphics PUBLIC src)
 # setting the shader compile script path
 set(SHADER_COMPILE_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/src/shader/compile.py CACHE STRING "SHADER_COMPILE_SCRIPT") 
 
-
 # linking undicht core
 target_link_libraries(graphics core)
 
@@ -85,7 +105,6 @@ target_link_libraries(graphics ${Vulkan_LIBRARIES})
 # linking vma
 add_subdirectory(extern/vma)
 target_link_libraries(graphics vma)
-
 
 # adding a custom target for building the engines shaders
 add_custom_target(shader COMMAND python3 ${SHADER_COMPILE_SCRIPT} "${PROJECT_SOURCE_DIR}/graphics/src/shader")

@@ -28,6 +28,4 @@ add_subdirectory(tests)
 enable_testing()
 
 # adding examples
-#add_subdirectory(examples/hello_world)
-#add_subdirectory(examples/tonk_game)
-#add_subdirectory(examples/cell)
+add_subdirectory(examples)

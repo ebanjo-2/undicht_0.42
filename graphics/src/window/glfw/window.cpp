@@ -24,7 +24,7 @@ namespace undicht {
 
             // only for vulkan
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-            glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // temporary. will need some work later
+            // glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // temporary. will need some work later
 
             // creating the window
             _width = width;
