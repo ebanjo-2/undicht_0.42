@@ -40,6 +40,9 @@ set(GRAPHICS_CORE_SOURCES
     src/core/vulkan/shader_module.h
     src/core/vulkan/shader_module.cpp
     
+    src/core/vulkan/buffer.h
+    src/core/vulkan/buffer.cpp
+    
 )
 
 set(GRAPHICS_WINDOW_SOURCES
