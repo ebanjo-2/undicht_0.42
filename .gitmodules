@@ -4,3 +4,12 @@
 [submodule "graphics/extern/imgui"]
 	path = graphics/extern/imgui
 	url = https://github.com/ocornut/imgui
+[submodule "tools/extern/stb"]
+	path = tools/extern/stb
+	url = https://github.com/ebanjo-2/stb
+[submodule "tools/extern/glm"]
+	path = tools/extern/glm
+	url = https://github.com/ebanjo-2/glm
+[submodule "tools/extern/assimp"]
+	path = tools/extern/assimp
+	url = https://github.com/ebanjo-2/assimp

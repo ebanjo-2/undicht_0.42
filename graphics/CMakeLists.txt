@@ -43,6 +43,9 @@ set(GRAPHICS_CORE_SOURCES
     src/core/vulkan/buffer.h
     src/core/vulkan/buffer.cpp
     
+    src/core/vulkan/image.h
+    src/core/vulkan/image.cpp
+    
 )
 
 set(GRAPHICS_WINDOW_SOURCES

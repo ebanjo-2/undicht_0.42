@@ -2,6 +2,20 @@ add_library("engine" STATIC
 
     src/engine.h
     src/engine.cpp
+    
+    src/application.h
+    src/application.cpp
+
+    src/scene/scene.h
+    src/scene/scene.cpp
+    src/scene/node.h
+    src/scene/node.cpp
+    src/scene/texture.h
+    src/scene/texture.cpp
+    src/scene/mech.h
+    src/scene/mech.cpp
+    src/scene/material.h
+    src/scene/material.cpp
 
 )
 

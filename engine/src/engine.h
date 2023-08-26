@@ -14,18 +14,17 @@
 namespace undicht {
 
     class Engine {
-        // initializes vulkan and a window
+        // initializes vulkan and the window library
     protected:
 
-        graphics::WindowAPI _glfw;
+        graphics::WindowAPI _window_api;
         vulkan::Instance _vk_instance;
 
     public:
 
         /** @brief initializes core engine components 
          * initializes glfw
-         * creates a vulkan instance 
-         * initializes the global vulkan memory allocator*/
+         * creates a vulkan instance */
         virtual void init();
 
         /** clean up the core engine components */

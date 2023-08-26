@@ -1,8 +1,7 @@
 #include "debug.h"
 #include "engine.h"
-#include "window/glfw/window.h"
-#include "core/vulkan/logical_device.h"
-#include "core/vulkan/swap_chain.h"
+#include "application.h"
+
 #include "core/vulkan/frame_buffer.h"
 #include "core/vulkan/render_pass.h"
 #include "core/vulkan/pipeline.h"
@@ -18,36 +17,23 @@ using namespace vulkan;
 int main() {
 
     // initializing the engine and opening a window
-    Engine undicht_engine;
-    undicht_engine.init();
-    Window glfw_window;
-    glfw_window.open(undicht_engine.getVulkanInstance().getInstance(), "Hello Triangle!");
-    LogicalDevice device;
-    device.init(undicht_engine.getVulkanInstance().chooseGPU(), glfw_window.getSurface());
-
-    // setting up the swap chain
-    SwapChain swap_chain;
-    swap_chain.init(device, glfw_window.getSurface());
-    std::vector<ImageView> swap_images = swap_chain.retrieveSwapImages();
+    Application app;
+    app.init("Hello Triangle!", VK_PRESENT_MODE_FIFO_KHR);
 
     // setting up the render pass
     RenderPass render_pass;
-    render_pass.addAttachment(swap_chain.getSwapImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    render_pass.addAttachment(app.getSwapChain().getSwapImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     render_pass.addSubPass({0}, {VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL});
-    render_pass.init(device.getDevice());
+    render_pass.init(app.getDevice().getDevice());
 
     // setting up the swap chain framebuffers
-    std::vector<Framebuffer> swap_framebuffers(swap_images.size());
-    for(int i = 0; i < swap_images.size(); i++) {
-        swap_framebuffers.at(i).setAttachment(0, swap_images.at(i).getImageView());
-        swap_framebuffers.at(i).init(device.getDevice(), render_pass, swap_chain.getExtent());
-    }
+    std::vector<Framebuffer> swap_framebuffers = app.createSwapImageFramebuffers(render_pass);
 
     // setting up the shader modules
     ShaderModule vertex_shader;
-    vertex_shader.init(device.getDevice(), VK_SHADER_STAGE_VERTEX_BIT, "../../../examples/hello_triangle/src/shader/bin/triangle.vert.spv");
+    vertex_shader.init(app.getDevice().getDevice(), VK_SHADER_STAGE_VERTEX_BIT, "src/shader/bin/triangle.vert.spv");
     ShaderModule fragment_shader;
-    fragment_shader.init(device.getDevice(), VK_SHADER_STAGE_FRAGMENT_BIT, "../../../examples/hello_triangle/src/shader/bin/triangle.frag.spv");
+    fragment_shader.init(app.getDevice().getDevice(), VK_SHADER_STAGE_FRAGMENT_BIT, "src/shader/bin/triangle.frag.spv");
 
     // setting up the pipeline
     Pipeline pipeline;
@@ -58,66 +44,61 @@ int main() {
     pipeline.setInputAssembly(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     pipeline.setMultisampleState(false);
     pipeline.setRasterizationState(false);
-    pipeline.setViewport(swap_chain.getExtent());
-    pipeline.init(device.getDevice(), render_pass.getRenderPass());
+    pipeline.setViewport(app.getSwapChain().getExtent());
+    pipeline.init(app.getDevice().getDevice(), render_pass.getRenderPass());
 
     // setting up synchronisation objects
     Semaphore render_finished_semaphore;
-    render_finished_semaphore.init(device.getDevice());
+    render_finished_semaphore.init(app.getDevice().getDevice());
     Semaphore image_acquired_semaphore;
-    image_acquired_semaphore.init(device.getDevice());
+    image_acquired_semaphore.init(app.getDevice().getDevice());
     Fence render_finished_fence;
-    render_finished_fence.init(device.getDevice(), true);
+    render_finished_fence.init(app.getDevice().getDevice(), true);
 
     // setting up the command buffer
     CommandBuffer cmd_buffer;
-    cmd_buffer.init(device.getDevice(), device.getGraphicsCmdPool());
+    cmd_buffer.init(app.getDevice().getDevice(), app.getDevice().getGraphicsCmdPool());
 
     // render loop
-    while(!glfw_window.shouldClose()) {
+    while(!app.getWindow().shouldClose()) {
         
         // wait for previous frame to finish
         render_finished_fence.waitForProcessToFinish();
 
         // acquire image to render to
-        int image_id = swap_chain.acquireNextSwapImage(image_acquired_semaphore.getAsSignal());
+        int image_id = app.getSwapChain().acquireNextSwapImage(image_acquired_semaphore.getAsSignal());
 
         if(image_id != -1) {
             // record command buffer
             VkClearValue clear_color = {0.2f, 0.2f, 0.2f, 0.0f};
             cmd_buffer.beginCommandBuffer(true);
-            cmd_buffer.beginRenderPass(render_pass.getRenderPass(), swap_framebuffers.at(image_id).getFramebuffer(), swap_chain.getExtent(), {clear_color});
+            cmd_buffer.beginRenderPass(render_pass.getRenderPass(), swap_framebuffers.at(image_id).getFramebuffer(), app.getSwapChain().getExtent(), {clear_color});
             cmd_buffer.bindGraphicsPipeline(pipeline.getPipeline());
             cmd_buffer.draw(3);
             cmd_buffer.endRenderPass();
             cmd_buffer.endCommandBuffer();
 
             // submit command buffer
-            device.submitOnGraphicsQueue(cmd_buffer.getCommandBuffer(), render_finished_fence.getFence(), {image_acquired_semaphore.getAsWaitOn()}, {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}, {render_finished_semaphore.getAsSignal()});
-            device.presentOnPresentQueue(swap_chain.getSwapchain(), image_id, {render_finished_semaphore.getAsWaitOn()});
+            app.getDevice().submitOnGraphicsQueue(cmd_buffer.getCommandBuffer(), render_finished_fence.getFence(), {image_acquired_semaphore.getAsWaitOn()}, {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}, {render_finished_semaphore.getAsSignal()});
+            app.getDevice().presentOnPresentQueue(app.getSwapChain().getSwapchain(), image_id, {render_finished_semaphore.getAsWaitOn()});
 
         } else {
             // recreate the swap chain
-            swap_chain.recreate(device, glfw_window.getSurface());
-            swap_chain.freeSwapImages(swap_images);
-            swap_images = swap_chain.retrieveSwapImages();
-            for(int i = 0; i < swap_images.size(); i++) {
-                swap_framebuffers.at(i).cleanUp();
-                swap_framebuffers.at(i).setAttachment(0, swap_images.at(i).getImageView());
-                swap_framebuffers.at(i).init(device.getDevice(), render_pass, swap_chain.getExtent());
-            }
+            app.recreateSwapChain(VK_PRESENT_MODE_FIFO_KHR);
+            app.recreateSwapImageFramebuffers(swap_framebuffers, render_pass);
+
             pipeline.cleanUp();
-            pipeline.setViewport(swap_chain.getExtent());
-            pipeline.init(device.getDevice(), render_pass.getRenderPass());
+            pipeline.setViewport(app.getSwapChain().getExtent());
+            pipeline.init(app.getDevice().getDevice(), render_pass.getRenderPass());
             render_finished_fence.reset();
         }
 
-        glfw_window.update();
+        app.getWindow().update();
 
     }
 
     // cleanup
-    device.waitForProcessesToFinish();
+    app.getDevice().waitForProcessesToFinish();
     cmd_buffer.cleanUp();
     render_finished_semaphore.cleanUp();
     image_acquired_semaphore.cleanUp();
@@ -125,13 +106,10 @@ int main() {
     pipeline.cleanUp();
     vertex_shader.cleanUp();
     fragment_shader.cleanUp();
-    for(Framebuffer& f : swap_framebuffers) f.cleanUp();
+    app.destroySwapImageFramebuffers(swap_framebuffers);
     render_pass.cleanUp();
-    swap_chain.freeSwapImages(swap_images);
-    swap_chain.cleanUp();
-    device.cleanUp();
-    glfw_window.close();
-    undicht_engine.cleanUp();
+
+    app.cleanUp();
 
     return 0;
 }

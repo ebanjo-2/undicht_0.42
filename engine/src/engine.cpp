@@ -9,7 +9,7 @@ namespace undicht {
          * creates a vulkan instance 
         */
 
-        _glfw.init(); // needs to be initialized before the instance, because the instance gets the names of the required extensions from glfw
+        _window_api.init(); // needs to be initialized before the instance, because the instance gets the names of the required extensions from glfw
         _vk_instance.init();
 
     }
@@ -22,7 +22,7 @@ namespace undicht {
         _vk_instance.cleanUp();
 
         // terminating glfw
-        _glfw.cleanUp();
+        _window_api.cleanUp();
     }
 
     const vulkan::Instance& Engine::getVulkanInstance() const {
@@ -32,7 +32,7 @@ namespace undicht {
 
     const graphics::WindowAPI& Engine::getWindowAPI() const {
 
-        return _glfw;
+        return _window_api;
     }
 
 } // namespace undicht
