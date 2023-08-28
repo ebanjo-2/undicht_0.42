@@ -45,6 +45,11 @@ namespace undicht {
             return _allocation_info.size;
         }
 
+        const VkBuffer& Buffer::getBuffer() const {
+
+            return _buffer;
+        }
+
         void Buffer::setData(uint32_t byte_size, uint32_t offset, const void* data) {
             /** @brief reads a chunk of data from the buffer
              * make sure that there is enough memory allocated both in the buffer and data 
@@ -54,7 +59,6 @@ namespace undicht {
 
             memcpy(_allocation_info.pMappedData + offset, data, byte_size);
         }
-
 
         void Buffer::readData(uint32_t byte_size, uint32_t offset, void* data) {
             /** @brief reads a chunk of data from the buffer

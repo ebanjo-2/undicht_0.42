@@ -13,9 +13,8 @@
 
 #include "vulkan_memory_allocator.h"
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+#include "scene/scene.h"
+#include "scene/scene_loader.h"
 
 using namespace undicht;
 using namespace graphics;
@@ -26,6 +25,10 @@ int main() {
     // initializing the engine and opening a window
     Application app;
     app.init("Textured cube", VK_PRESENT_MODE_FIFO_KHR);
+    
+    // setting up the vulkan memory allocator
+    vma::VulkanMemoryAllocator vulkan_allocator;
+    vulkan_allocator.init(app.getVulkanInstance().getInstance(), app.getDevice().getDevice(), app.getDevice().getPhysicalDevice());
 
     // setting up the render pass
     RenderPass render_pass;
@@ -66,21 +69,12 @@ int main() {
     CommandBuffer cmd_buffer;
     cmd_buffer.init(app.getDevice().getDevice(), app.getDevice().getGraphicsCmdPool());
 
-    
-    // setting up the vulkan memory allocator
-    vma::VulkanMemoryAllocator vulkan_allocator;
-    vulkan_allocator.init(app.getVulkanInstance().getInstance(), app.getDevice().getDevice(), app.getDevice().getPhysicalDevice());
+    // loading the cube model using assimp
+    Scene scene;
+    scene.init(app.getDevice(), vulkan_allocator);
+    SceneLoader scene_loader;
+    scene_loader.importScene("res/tex_cube.dae", scene);
 
-    // loading the cube model using assimp (https://learnopengl.com/Model-Loading/Model)
-    Assimp::Importer import;
-    const aiScene *scene = import.ReadFile("res/tex_cube.dae", aiProcess_Triangulate | aiProcess_FlipUVs);
-    if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-        UND_ERROR << "ERROR::ASSIMP::" << import.GetErrorString() << "\n";
-        return -1;
-    }
-
-    //Buffer vertex_buffer;
-    //vertex_buffer.init(vulkan_allocator, {app.getDevice().getGraphicsQueueFamily()}, 0, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
 
     // render loop
     while(!app.getWindow().shouldClose()) {
@@ -123,6 +117,7 @@ int main() {
     // cleanup
     app.getDevice().waitForProcessesToFinish();
 
+    scene.cleanUp();
     vulkan_allocator.cleanUp();
     cmd_buffer.cleanUp();
     render_finished_semaphore.cleanUp();

@@ -46,6 +46,17 @@ set(GRAPHICS_CORE_SOURCES
     src/core/vulkan/image.h
     src/core/vulkan/image.cpp
     
+    src/core/vulkan/sampler.h
+    src/core/vulkan/sampler.cpp
+    
+    src/core/vulkan/descriptor_set_layout.h
+    src/core/vulkan/descriptor_set_layout.cpp
+    
+    src/core/vulkan/descriptor_pool.h
+    src/core/vulkan/descriptor_pool.cpp
+    
+    src/core/vulkan/descriptor_set.h
+    src/core/vulkan/descriptor_set.cpp
 )
 
 set(GRAPHICS_WINDOW_SOURCES

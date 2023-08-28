@@ -7,7 +7,6 @@ namespace undicht {
 
     namespace vma {
 
-
         void VulkanMemoryAllocator::init(VkInstance instance, VkDevice device, VkPhysicalDevice physical_device) {
             
             VmaAllocatorCreateInfo info{};

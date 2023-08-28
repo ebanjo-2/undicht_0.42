@@ -1,0 +1,6 @@
+[submodule "assimp"]
+	shallow = true
+[submodule "glm"]
+	shallow = true
+[submodule "stb"]
+	shallow = true

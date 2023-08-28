@@ -41,6 +41,8 @@ namespace undicht {
             bool isCPUVisible() const;
 
             uint32_t getAllocatedSize() const;
+            
+            const VkBuffer& getBuffer() const;
 
             /** @brief reads a chunk of data from the buffer
              * make sure that there is enough memory allocated both in the buffer and data 
@@ -51,6 +53,7 @@ namespace undicht {
              * make sure that there is enough memory allocated both in the buffer and data 
              * will only work if the buffer is initialized with the VMA_ALLOCATION_CREATE_MAPPED_BIT flag */
             void readData(uint32_t byte_size, uint32_t offset, void* data);
+
 
           protected:
             // creating buffer related structs
