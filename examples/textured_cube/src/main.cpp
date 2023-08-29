@@ -14,11 +14,13 @@
 #include "vulkan_memory_allocator.h"
 
 #include "scene/scene.h"
-#include "scene/scene_loader.h"
+
+#include "scene_loader/scene_loader.h"
 
 using namespace undicht;
 using namespace graphics;
 using namespace vulkan;
+using namespace tools;
 
 int main() {
 

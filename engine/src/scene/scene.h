@@ -5,6 +5,9 @@
 #include "core/vulkan/logical_device.h"
 
 #include "mesh.h"
+#include "texture.h"
+#include "material.h"
+#include "node.h"
 
 #include "vector"
 
@@ -20,6 +23,9 @@ namespace undicht {
         vma::VulkanMemoryAllocator _allocator_handle;
         
         std::vector<Mesh> _meshes;
+        std::vector<Material> _materials;
+
+        Node _root_node;
 
       public:
 
@@ -27,6 +33,9 @@ namespace undicht {
         void cleanUp();
         
         Mesh& addMesh();
+        Material& addMaterial();
+
+        Node& getRootNode();
 
 
     };

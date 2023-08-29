@@ -16,11 +16,9 @@ add_library("engine" STATIC
     src/scene/mesh.cpp
     src/scene/material.h
     src/scene/material.cpp
-    src/scene/scene_loader.h
-    src/scene/scene_loader.cpp
 
 )
 
-target_link_libraries("engine" core graphics tools)
+target_link_libraries("engine" core graphics)
 
 target_include_directories("engine" PUBLIC src)

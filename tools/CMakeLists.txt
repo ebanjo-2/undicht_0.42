@@ -41,9 +41,14 @@ add_library("tools"
 	src/binary_data/binary_data_file.h
 	src/binary_data/binary_data_file.cpp
 	
+	src/scene_loader/scene_loader.h
+    src/scene_loader/scene_loader.cpp
+	src/scene_loader/texture_loader.h
+	src/scene_loader/texture_loader.cpp
+	        
 	extern/stb_implementation.cpp
 )
 
 
 target_include_directories("tools" PUBLIC src extern/glm extern/assimp/include)
-target_link_libraries("tools" PUBLIC core graphics stb_image assimp)
+target_link_libraries("tools" PUBLIC core graphics engine stb_image assimp)

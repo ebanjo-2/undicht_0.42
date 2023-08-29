@@ -58,6 +58,11 @@ namespace undicht {
         _material_id = material_id;
     }
 
+    void Mesh::setName(const std::string& name) {
+
+        _name = name;
+    }
+
     bool Mesh::getHasPositions() const {
         
         return _has_positions;
@@ -83,6 +88,11 @@ namespace undicht {
         return _material_id;
     }
 
+    std::string Mesh::getName() const {
+
+        return _name;
+    }
+
     ///////////////////////////// non public mesh functions /////////////////////////////
 
     void Mesh::uploadToBuffer(Buffer& dst, const char* data, uint32_t byte_size) {
@@ -91,7 +101,7 @@ namespace undicht {
         // init the staging buffer
         Buffer staging_buffer;
         VkBufferUsageFlags tmp_usage_flags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        VmaAllocationCreateFlags tmp_vma_flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+        VmaAllocationCreateFlags tmp_vma_flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
         staging_buffer.init(_allocator_handle, {_device_handle.getGraphicsQueueFamily()}, byte_size, tmp_usage_flags, tmp_vma_flags);
 
         // store data in staging buffer
@@ -116,7 +126,6 @@ namespace undicht {
         cmd.cleanUp();
         staging_buffer.cleanUp();
 
-        UND_LOG << "uploaded " << byte_size << " bytes of data to the vram\n";
     }
 
 } // undicht

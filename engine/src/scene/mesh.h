@@ -5,6 +5,8 @@
 #include "core/vulkan/buffer.h"
 #include "core/vulkan/logical_device.h"
 
+#include "string"
+
 namespace undicht {
 
     class Mesh {
@@ -33,6 +35,7 @@ namespace undicht {
 
         // other attributes
         uint32_t _material_id;
+        std::string _name;
 
       public:
 
@@ -44,12 +47,14 @@ namespace undicht {
 
         void setVertexAttributes(bool has_positions, bool has_tex_coords, bool has_normals, bool has_tangents_bitangents);
         void setMaterialID(uint32_t material_id);
+        void setName(const std::string& name);
 
         bool getHasPositions() const;
         bool getHasTexCoords() const;
         bool getHasNormals() const;
         bool getHasTangentsBitangents() const;
         uint32_t getMaterialID() const;
+        std::string getName() const;
 
       protected:
         // non public mesh functions
