@@ -72,6 +72,12 @@ set(GRAPHICS_WINDOW_SOURCES
 
 set(GRAPHICS_RENDERER_SOURCES
 
+	src/renderer/vulkan/uniform_buffer.h
+	src/renderer/vulkan/uniform_buffer.cpp
+	
+	src/renderer/vulkan/descriptor_set_cache.h	
+	src/renderer/vulkan/descriptor_set_cache.cpp
+	
 )
 
 set(GRAPHICS_USER_INTERFACE_SOURCES
@@ -82,12 +88,37 @@ set(GRAPHICS_IMGUI_SOURCES
 
 )
 
+set(GRAPHICS_SCENE_SOURCES
+
+    src/scene/scene.h
+    src/scene/scene.cpp
+    src/scene/node.h
+    src/scene/node.cpp
+    src/scene/texture.h
+    src/scene/texture.cpp
+    src/scene/mesh.h
+    src/scene/mesh.cpp
+    src/scene/material.h
+    src/scene/material.cpp
+    
+    src/scene/renderer/renderer.h
+    src/scene/renderer/renderer.cpp
+    
+)
+
+set(GRAPHICS_SHADER_DIRECTORIES
+
+	"${PROJECT_SOURCE_DIR}/graphics/src/shader"
+	"${PROJECT_SOURCE_DIR}/graphics/src/scene/shader"
+)
+
 add_library(graphics
     ${GRAPHICS_WINDOW_SOURCES}
     ${GRAPHICS_CORE_SOURCES}
     ${GRAPHICS_RENDERER_SOURCES}
     ${GRAPHICS_USER_INTERFACE_SOURCES}
     ${GRAPHICS_IMGUI_SOURCES}
+    ${GRAPHICS_SCENE_SOURCES}
 )
 
 target_include_directories(graphics PUBLIC src)
@@ -124,5 +155,5 @@ add_subdirectory(extern/vma)
 target_link_libraries(graphics vma)
 
 # adding a custom target for building the engines shaders
-add_custom_target(shader COMMAND python3 ${SHADER_COMPILE_SCRIPT} "${PROJECT_SOURCE_DIR}/graphics/src/shader")
-add_dependencies(graphics shader)
+add_custom_target(graphics_shader COMMAND python3 ${SHADER_COMPILE_SCRIPT} ${GRAPHICS_SHADER_DIRECTORIES})
+add_dependencies(graphics graphics_shader)

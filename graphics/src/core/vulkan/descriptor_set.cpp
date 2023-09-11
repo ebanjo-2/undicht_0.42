@@ -5,17 +5,19 @@ namespace undicht {
 
     namespace vulkan {
 
-        DescriptorSet::~DescriptorSet() {
-
-            clearPendingWrites();
-        }
-
         void DescriptorSet::init(const VkDevice& device, const VkDescriptorPool& pool, const VkDescriptorSetLayout& layout) {
 
             _device_handle = device;
 
             VkDescriptorSetAllocateInfo info = createDescriptorSetAllocateInfo(pool, layout);
             vkAllocateDescriptorSets(device, &info, &_descriptor_set);
+        }
+
+        void DescriptorSet::cleanUp() {
+            
+            // the descriptor set gets destroyed with the descriptor pool
+
+            clearPendingWrites();
         }
 
         void DescriptorSet::bindUniformBuffer(uint32_t binding, const Buffer& buffer) {

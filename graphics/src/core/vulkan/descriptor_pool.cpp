@@ -2,15 +2,18 @@
 
 #include "vector"
 
+#include "debug.h"
+
 namespace undicht {
 
     namespace vulkan {
 
-        void DescriptorPool::init(const VkDevice& device, const std::vector<VkDescriptorType> descriptor_types, uint32_t pool_size) {
+        void DescriptorPool::init(const VkDevice& device, const std::vector<VkDescriptorType>& descriptor_types, uint32_t pool_size) {
             
             _device_handle = device;
 
-            // counting the different descriptor types
+            // all descriptor types with the number of times they appear in the descriptor_types vector
+            // taken from https://vkguide.dev/docs/extra-chapter/abstracting_descriptors/
             std::vector<std::pair<VkDescriptorType, uint32_t>> descriptor_frequency = {
                 {VK_DESCRIPTOR_TYPE_SAMPLER, 0},
                 {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 0},
@@ -25,26 +28,31 @@ namespace undicht {
                 {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 0}};
 
             // counting the descriptor types
-            for (const VkDescriptorType& descriptor_type : descriptor_types)
-            {
-                for (std::pair<VkDescriptorType, uint32_t>& entry : descriptor_frequency)
-                {
+            for (const VkDescriptorType& descriptor_type : descriptor_types) {
+                for (std::pair<VkDescriptorType, uint32_t>& entry : descriptor_frequency) {
+
                     if (entry.first == descriptor_type)
                         entry.second++;
+
                 }
+
             }
 
             // creating the descriptor pool
             std::vector<VkDescriptorPoolSize> pool_sizes;
 
-            for (const std::pair<VkDescriptorType, float>& entry : descriptor_frequency)
-            {
+            for (const std::pair<VkDescriptorType, float>& entry : descriptor_frequency) {
+
                 if (entry.second != 0)
                     pool_sizes.push_back(createDescriptorPoolSize(pool_size * entry.second, entry.first));
+                    
             }
+
+            if((pool_sizes.size() * pool_size) == 0) return;
 
             VkDescriptorPoolCreateInfo info = createDescriptorPoolCreateInfo(pool_size, pool_sizes);
             vkCreateDescriptorPool(device, &info, {}, &_descriptor_pool);
+
         }
 
         void DescriptorPool::cleanUp() {

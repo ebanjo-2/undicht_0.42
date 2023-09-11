@@ -33,6 +33,8 @@ namespace undicht {
         bool _has_normals;
         bool _has_tangents_and_bitangents; // if there is one there is also the other
 
+        uint32_t _vertex_count;
+
         // other attributes
         uint32_t _material_id;
         std::string _name;
@@ -45,6 +47,7 @@ namespace undicht {
         void setVertexData(const char* data, uint32_t byte_size);
         void setIndexData(const char* data, uint32_t byte_size);
 
+        void setVertexCount(uint32_t count);
         void setVertexAttributes(bool has_positions, bool has_tex_coords, bool has_normals, bool has_tangents_bitangents);
         void setMaterialID(uint32_t material_id);
         void setName(const std::string& name);
@@ -53,8 +56,12 @@ namespace undicht {
         bool getHasTexCoords() const;
         bool getHasNormals() const;
         bool getHasTangentsBitangents() const;
+        uint32_t getVertexCount() const;
         uint32_t getMaterialID() const;
         std::string getName() const;
+
+        const vulkan::Buffer& getVertexBuffer() const;
+        const vulkan::Buffer& getIndexBuffer() const;
 
       protected:
         // non public mesh functions

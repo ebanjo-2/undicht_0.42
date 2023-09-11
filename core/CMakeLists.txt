@@ -10,7 +10,10 @@ add_library("core" STATIC
 	
 	src/debug.h
 	src/debug.cpp
-
+	
+	src/file_tools.h
+	src/file_tools.cpp
+	        
 )
 
 target_include_directories("core" PUBLIC src)

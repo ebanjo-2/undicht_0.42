@@ -1,6 +1,7 @@
 #ifndef DESCRIPTOR_POOL_H
 #define DESCRIPTOR_POOL_H
 
+#include "cstdint"
 #include "vector"
 #include "vulkan/vulkan.h"
 
@@ -10,6 +11,7 @@ namespace undicht {
 
         class DescriptorPool {
             /** DescriptorSets have to be allocated from a DescriptorPool */
+
         protected:
 
             VkDevice _device_handle;
@@ -18,7 +20,7 @@ namespace undicht {
 
         public:
 
-            void init(const VkDevice& device, const std::vector<VkDescriptorType> descriptor_types, uint32_t pool_size = 1000);
+            void init(const VkDevice& device, const std::vector<VkDescriptorType>& descriptor_types, uint32_t pool_size = 1000);
             void cleanUp(); // will also destroy any descriptor sets allocated from this pool
 
             const VkDescriptorPool& getDescriptorPool() const;

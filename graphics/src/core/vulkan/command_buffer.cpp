@@ -85,10 +85,13 @@ namespace undicht {
 
         void CommandBuffer::draw(uint32_t vertex_count, bool draw_indexed, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance) {
             
-            if(draw_indexed)
+            if(draw_indexed) {
+                
                 vkCmdDrawIndexed(_cmd_buffer, vertex_count, instance_count, first_vertex, 0, first_instance);
-            else 
+            } else {
+
                 vkCmdDraw(_cmd_buffer, vertex_count, instance_count, first_vertex, first_instance);
+            }
 
         }
 

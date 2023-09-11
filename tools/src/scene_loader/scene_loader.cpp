@@ -58,7 +58,7 @@ namespace undicht {
                 processAssimpMaterial(assimp_scene->mMaterials[i], load_to.addMaterial(), directory);
             }
 
-            // process all nodes (recursivly)
+            // process all nodes (recursive)
             processAssimpNode(assimp_scene->mRootNode, load_to.getRootNode());
 
         }
@@ -117,6 +117,7 @@ namespace undicht {
             }
 
             load_to.setIndexData((const char*)face_ids.data(), face_ids.size() * sizeof(uint32_t));
+            load_to.setVertexCount(face_ids.size());
         }
 
         void SceneLoader::processAssimpVec3(const aiVector3D& assimp_vec, std::vector<ai_real>& load_to) {
@@ -161,8 +162,6 @@ namespace undicht {
             std::vector<uint32_t> meshes;
             meshes.insert(meshes.end(), assimp_node->mMeshes, assimp_node->mMeshes + assimp_node->mNumMeshes);
             load_to.setMeshes(meshes);
-
-            UND_LOG << "processed a node with " << meshes.size() << " meshes\n";
 
             // recursivly processing the child nodes
             for(int i = 0; i < assimp_node->mNumChildren; i++) {

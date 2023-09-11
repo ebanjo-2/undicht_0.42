@@ -25,7 +25,7 @@ namespace undicht {
              * @param output_layouts declare into which layout the attachments will be transitioned before being used as outputs.
              *  this depends on what kind of attachment is used:
              *  Color Attachments: should be VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-             *  Color Attachments: should be VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+             *  Depth Attachments: should be VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
              * @param input_attachments declare which attachments of the render pass will be used as inputs of the subpass
              * @param input_layouts declare in which layout the input attachments will be when accessing them
              * @return an id with which the subpass can be adressed in other functions */

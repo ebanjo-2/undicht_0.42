@@ -14,8 +14,12 @@
 #include "vulkan_memory_allocator.h"
 
 #include "scene/scene.h"
-
 #include "scene_loader/scene_loader.h"
+#include "scene/renderer/renderer.h"
+
+#include "glm/glm.hpp"
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 using namespace undicht;
 using namespace graphics;
@@ -32,33 +36,6 @@ int main() {
     vma::VulkanMemoryAllocator vulkan_allocator;
     vulkan_allocator.init(app.getVulkanInstance().getInstance(), app.getDevice().getDevice(), app.getDevice().getPhysicalDevice());
 
-    // setting up the render pass
-    RenderPass render_pass;
-    render_pass.addAttachment(app.getSwapChain().getSwapImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-    render_pass.addSubPass({0}, {VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL});
-    render_pass.init(app.getDevice().getDevice());
-
-    // setting up the swap chain framebuffers
-    std::vector<Framebuffer> swap_framebuffers = app.createSwapImageFramebuffers(render_pass);
-
-    // setting up the shader modules
-    ShaderModule vertex_shader;
-    vertex_shader.init(app.getDevice().getDevice(), VK_SHADER_STAGE_VERTEX_BIT, "src/shader/bin/cube.vert.spv");
-    ShaderModule fragment_shader;
-    fragment_shader.init(app.getDevice().getDevice(), VK_SHADER_STAGE_FRAGMENT_BIT, "src/shader/bin/cube.frag.spv");
-
-    // setting up the pipeline
-    Pipeline pipeline;
-    pipeline.addShaderModule(vertex_shader);
-    pipeline.addShaderModule(fragment_shader);
-    pipeline.setBlending(0, false);
-    pipeline.setDepthStencilState(false);
-    pipeline.setInputAssembly(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-    pipeline.setMultisampleState(false);
-    pipeline.setRasterizationState(false);
-    pipeline.setViewport(app.getSwapChain().getExtent());
-    pipeline.init(app.getDevice().getDevice(), render_pass.getRenderPass());
-
     // setting up synchronisation objects
     Semaphore render_finished_semaphore;
     render_finished_semaphore.init(app.getDevice().getDevice());
@@ -71,12 +48,22 @@ int main() {
     CommandBuffer cmd_buffer;
     cmd_buffer.init(app.getDevice().getDevice(), app.getDevice().getGraphicsCmdPool());
 
+    // setting up the renderer
+    Renderer renderer;
+    renderer.init(app.getDevice(), app.getSwapChain(), vulkan_allocator);
+
     // loading the cube model using assimp
     Scene scene;
     scene.init(app.getDevice(), vulkan_allocator);
     SceneLoader scene_loader;
     scene_loader.importScene("res/tex_cube.dae", scene);
+    //scene_loader.importScene("res/sponza/sponza.obj", scene);
 
+    // setting up the camera matrices
+    glm::mat4 camera_view = glm::lookAt(glm::vec3(4.0, 2.0, 4.0), glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, -1.0, 0.0));
+    glm::mat4 camera_proj = glm::perspective(90.0f, 800.0f / 600.0f, 0.1f, 1000.0f);
+
+    renderer.loadCameraMatrices(glm::value_ptr(camera_view), glm::value_ptr(camera_proj));
 
     // render loop
     while(!app.getWindow().shouldClose()) {
@@ -89,12 +76,11 @@ int main() {
 
         if(image_id != -1) {
             // record command buffer
-            VkClearValue clear_color = {0.2f, 0.2f, 0.2f, 0.0f};
+
             cmd_buffer.beginCommandBuffer(true);
-            cmd_buffer.beginRenderPass(render_pass.getRenderPass(), swap_framebuffers.at(image_id).getFramebuffer(), app.getSwapChain().getExtent(), {clear_color});
-            cmd_buffer.bindGraphicsPipeline(pipeline.getPipeline());
-            cmd_buffer.draw(3);
-            cmd_buffer.endRenderPass();
+            renderer.begin(cmd_buffer, image_acquired_semaphore, image_id);
+            renderer.draw(cmd_buffer, scene);
+            renderer.end(cmd_buffer);
             cmd_buffer.endCommandBuffer();
 
             // submit command buffer
@@ -104,12 +90,14 @@ int main() {
         } else {
             // recreate the swap chain
             app.recreateSwapChain(VK_PRESENT_MODE_FIFO_KHR);
-            app.recreateSwapImageFramebuffers(swap_framebuffers, render_pass);
 
-            pipeline.cleanUp();
-            pipeline.setViewport(app.getSwapChain().getExtent());
-            pipeline.init(app.getDevice().getDevice(), render_pass.getRenderPass());
+            renderer.recreateFramebuffers(vulkan_allocator, app.getSwapChain());
             render_finished_fence.reset();
+
+            // update aspect ratio
+            camera_proj = glm::perspective(90.0f, app.getWindow().getWidth() / float(app.getWindow().getHeight()), 0.1f, 1000.0f);
+            renderer.loadCameraMatrices(glm::value_ptr(camera_view), glm::value_ptr(camera_proj));
+
         }
 
         app.getWindow().update();
@@ -119,17 +107,13 @@ int main() {
     // cleanup
     app.getDevice().waitForProcessesToFinish();
 
+    renderer.cleanUp(app.getSwapChain());
     scene.cleanUp();
     vulkan_allocator.cleanUp();
     cmd_buffer.cleanUp();
     render_finished_semaphore.cleanUp();
     image_acquired_semaphore.cleanUp();
     render_finished_fence.cleanUp();
-    pipeline.cleanUp();
-    vertex_shader.cleanUp();
-    fragment_shader.cleanUp();
-    app.destroySwapImageFramebuffers(swap_framebuffers);
-    render_pass.cleanUp();
 
     app.cleanUp();
 

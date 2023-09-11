@@ -34,6 +34,7 @@ namespace undicht {
             VkSurfaceTransformFlagBitsKHR _surface_transform_flags;
 
             uint32_t _swap_image_count = 0;
+            
 
           public:
 

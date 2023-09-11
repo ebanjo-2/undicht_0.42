@@ -36,7 +36,8 @@ namespace undicht {
         Material& addMaterial();
 
         Node& getRootNode();
-
+        Mesh& getMesh(uint32_t mesh_id);
+        Material& getMaterial(uint32_t material_id);
 
     };
 

@@ -43,6 +43,12 @@ namespace undicht {
 
         // upload data to the vertex buffer
         uploadToBuffer(_index_buffer, data, byte_size);
+
+    }
+
+    void Mesh::setVertexCount(uint32_t count) {
+
+        _vertex_count = count;
     }
 
     void Mesh::setVertexAttributes(bool has_positions, bool has_tex_coords, bool has_normals, bool has_tangents_bitangents) {
@@ -83,6 +89,11 @@ namespace undicht {
         return _has_tangents_and_bitangents;
     }
 
+    uint32_t Mesh::getVertexCount() const {
+
+        return _vertex_count;
+    }
+
     uint32_t Mesh::getMaterialID() const {
 
         return _material_id;
@@ -91,6 +102,16 @@ namespace undicht {
     std::string Mesh::getName() const {
 
         return _name;
+    }
+
+    const vulkan::Buffer& Mesh::getVertexBuffer() const {
+
+        return _vertex_buffer;
+    }
+
+    const vulkan::Buffer& Mesh::getIndexBuffer() const {
+
+        return _index_buffer;
     }
 
     ///////////////////////////// non public mesh functions /////////////////////////////
@@ -112,7 +133,7 @@ namespace undicht {
         CommandBuffer cmd;
         cmd.init(_device_handle.getDevice(), _device_handle.getGraphicsCmdPool());
         cmd.beginCommandBuffer(true);
-        cmd.copy(staging_buffer.getBuffer(), _vertex_buffer.getBuffer(), copy_info);
+        cmd.copy(staging_buffer.getBuffer(), dst.getBuffer(), copy_info);
         cmd.endCommandBuffer();
 
         // set up fence as a way to know when the copy operation has finished

@@ -39,4 +39,14 @@ namespace undicht {
         return _root_node;
     }
 
+    Mesh& Scene::getMesh(uint32_t mesh_id) {
+
+        return _meshes.at(mesh_id);
+    }
+
+    Material& Scene::getMaterial(uint32_t material_id) {
+
+        return _materials.at(material_id);
+    }
+
 } // undicht
