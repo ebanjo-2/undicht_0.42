@@ -3,7 +3,7 @@
 
 #include "string"
 #include "scene/texture.h"
-
+#include "renderer/vulkan/transfer_buffer.h"
 
 namespace undicht {
 
@@ -16,9 +16,9 @@ namespace undicht {
           public:
 
             TextureLoader() = default;
-            TextureLoader(const std::string& file_name, Texture& load_to);
+            TextureLoader(const std::string& file_name, graphics::Texture& load_to, vulkan::TransferBuffer& transfer_buffer);
 
-            void importTexture(const std::string& file_name, Texture& load_to);
+            void importTexture(const std::string& file_name, graphics::Texture& load_to, vulkan::TransferBuffer& transfer_buffer);
 
           protected:
             // non public TextureLoader functions

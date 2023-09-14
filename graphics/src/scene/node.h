@@ -6,25 +6,29 @@
 
 namespace undicht {
 
-    class Node {
-      
-      protected:
+    namespace graphics {
 
-        // child nodes
-        std::vector<Node> _child_nodes;
+        class Node {
+        
+          protected:
 
-        // attributes of the Node
-        std::vector<uint32_t> _meshes;
+            // child nodes
+            std::vector<Node> _child_nodes;
 
-      public:
+            // attributes of the Node
+            std::vector<uint32_t> _meshes;
 
-        Node& addChildNode();
-        std::vector<Node>& getChildNodes();
+          public:
+ 
+            Node& addChildNode();
+            std::vector<Node>& getChildNodes();
 
-        void setMeshes(std::vector<uint32_t> meshes);
-        const std::vector<uint32_t>& getMeshes() const;
+            void setMeshes(std::vector<uint32_t> meshes);
+            const std::vector<uint32_t>& getMeshes() const;
 
-    };
+        };
+
+    } // graphics
 
 } // undicht
 

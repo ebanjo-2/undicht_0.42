@@ -6,12 +6,15 @@ namespace undicht {
 
     namespace tools {
 
-        TextureLoader::TextureLoader(const std::string& file_name, Texture& load_to) {
+        using namespace graphics;
+        using namespace vulkan;
 
-            importTexture(file_name, load_to);
+        TextureLoader::TextureLoader(const std::string& file_name, Texture& load_to, TransferBuffer& transfer_buffer) {
+
+            importTexture(file_name, load_to, transfer_buffer);
         }
 
-        void TextureLoader::importTexture(const std::string& file_name, Texture& load_to) {
+        void TextureLoader::importTexture(const std::string& file_name, Texture& load_to, TransferBuffer& transfer_buffer) {
 
             int width, height, nr_channels;
 
@@ -24,7 +27,7 @@ namespace undicht {
                 return;
             }
 
-            load_to.setData((char*)tmp, width, height, nr_channels);
+            load_to.setData((char*)tmp, width, height, nr_channels, transfer_buffer);
 
             stbi_image_free(tmp);
         }

@@ -2,26 +2,30 @@
 
 namespace undicht {
 
-    Node& Node::addChildNode() {
+    namespace graphics {
 
-        _child_nodes.emplace_back(Node());
+        Node& Node::addChildNode() {
 
-        return _child_nodes.back();
-    }
+            _child_nodes.emplace_back(Node());
 
-    std::vector<Node>& Node::getChildNodes() {
+            return _child_nodes.back();
+        }
 
-        return _child_nodes;
-    }
+        std::vector<Node>& Node::getChildNodes() {
 
-    void Node::setMeshes(std::vector<uint32_t> meshes) {
+            return _child_nodes;
+        }
 
-        _meshes = meshes;
-    }
+        void Node::setMeshes(std::vector<uint32_t> meshes) {
 
-    const std::vector<uint32_t>& Node::getMeshes() const {
+            _meshes = meshes;
+        }
 
-        return _meshes;
-    }
+        const std::vector<uint32_t>& Node::getMeshes() const {
+
+            return _meshes;
+        }
+
+    } // graphics
 
 } // undicht 

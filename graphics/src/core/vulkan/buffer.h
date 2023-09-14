@@ -20,7 +20,7 @@ namespace undicht {
 
 			      VmaAllocator _allocator_handle;
 
-            VkBuffer _buffer;
+            VkBuffer _buffer = VK_NULL_HANDLE;
             VmaAllocation _allocation;
             VmaAllocationInfo _allocation_info;
             VkMemoryPropertyFlags _mem_prop_flags; // contains whether or not the buffer is host visible
@@ -34,7 +34,7 @@ namespace undicht {
              * for staging buffers (copy memory to gpu only resource) : VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT
              * for readback buffer (copy memory from gpu to cpu visible memory) : VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT 
              * if you want to use the setData() and getData() functions you need to have the VMA_ALLOCATION_CREATE_MAPPED_BIT flags set */
-            void init(vma::VulkanMemoryAllocator& allocator, const std::vector<uint32_t>& queue_ids, uint32_t byte_size, VkBufferUsageFlags buffer_usage, VmaAllocationCreateFlags alloc_flags);
+            void init(vma::VulkanMemoryAllocator& allocator, const std::vector<uint32_t>& queue_ids, uint32_t byte_size, VkBufferUsageFlags buffer_usage, VmaMemoryUsage memory_usage, VmaAllocationCreateFlags alloc_flags);
             void cleanUp();
 
             /** @return whether or not you can directly store / read data from the buffer */

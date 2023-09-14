@@ -7,7 +7,7 @@ namespace undicht {
 
     namespace vulkan {
 
-        void Buffer::init(vma::VulkanMemoryAllocator& allocator, const std::vector<uint32_t>& queue_ids, uint32_t byte_size, VkBufferUsageFlags buffer_usage, VmaAllocationCreateFlags alloc_flags) {
+        void Buffer::init(vma::VulkanMemoryAllocator& allocator, const std::vector<uint32_t>& queue_ids, uint32_t byte_size, VkBufferUsageFlags buffer_usage, VmaMemoryUsage memory_usage, VmaAllocationCreateFlags alloc_flags) {
             /** @param queue_ids the ids of the queue families from which the buffer is going to be used 
              * @param byte_size the size of memory that will be allocated for the buffer 
              * @param alloc_flags follow the guide by amd: https://gpuopen-librariesandsdks.github.io/VulkanMemoryAllocator/html/usage_patterns.html 
@@ -23,13 +23,15 @@ namespace undicht {
             VmaAllocationCreateInfo alloc_info;
 
             buffer_info = createBufferCreateInfo(byte_size, buffer_usage, {}, queue_ids);
-            alloc_info = createVmaAllocationCreateInfo(VMA_MEMORY_USAGE_AUTO, alloc_flags);
+            alloc_info = createVmaAllocationCreateInfo(memory_usage, alloc_flags);
             
             vmaCreateBuffer(allocator.getVmaAllocator(), &buffer_info, &alloc_info, &_buffer, &_allocation, &_allocation_info);
             vmaGetAllocationMemoryProperties(allocator.getVmaAllocator(), _allocation, &_mem_prop_flags);
         }
 
         void Buffer::cleanUp() {
+
+            if(_buffer == VK_NULL_HANDLE) return;
 
             vmaDestroyBuffer(_allocator_handle, _buffer, _allocation);
         }

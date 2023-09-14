@@ -27,6 +27,8 @@ namespace undicht {
 
         void ImageView::cleanUp() {
 
+            if(_image_view == VK_NULL_HANDLE) return;
+
             vkDestroyImageView(_device_handle, _image_view, {});
         }
 

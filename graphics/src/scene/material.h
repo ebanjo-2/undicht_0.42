@@ -5,27 +5,34 @@
 
 namespace undicht {
 
-    class Material {
+    namespace graphics {
 
-      protected:
+        class Material {
 
-        vulkan::LogicalDevice _device_handle;
-        vma::VulkanMemoryAllocator _allocator_handle;
+          protected:
 
-        // attributes of the Material
-        std::vector<Texture> _textures;
+            vulkan::LogicalDevice _device_handle;
+            vma::VulkanMemoryAllocator _allocator_handle;
 
-      public:
+            // attributes of the Material
+            std::vector<Texture> _textures;
 
-        void init(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator);
-        void cleanUp();
+          public:
 
-        Texture& addTexture(Texture::Type type);
+            void init(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator);
+            void cleanUp();
 
-        /// @return will return nullptr, if the material doesnt have a texture of the requested type
-        const Texture* getTexture(Texture::Type type) const;
+            Texture& addTexture(Texture::Type type);
 
-    };
+            /// @return will return nullptr, if the material doesnt have a texture of the requested type
+            const Texture* getTexture(Texture::Type type) const;
+
+            // records the commands to generate the mip maps
+            void genMipMaps(vulkan::CommandBuffer& cmd);
+
+        };
+
+    } // graphics
 
 } // undicht
 

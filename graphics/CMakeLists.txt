@@ -78,6 +78,9 @@ set(GRAPHICS_RENDERER_SOURCES
 	src/renderer/vulkan/descriptor_set_cache.h	
 	src/renderer/vulkan/descriptor_set_cache.cpp
 	
+	src/renderer/vulkan/transfer_buffer.h	
+	src/renderer/vulkan/transfer_buffer.cpp
+	
 )
 
 set(GRAPHICS_USER_INTERFACE_SOURCES
@@ -101,8 +104,10 @@ set(GRAPHICS_SCENE_SOURCES
     src/scene/material.h
     src/scene/material.cpp
     
-    src/scene/renderer/renderer.h
-    src/scene/renderer/renderer.cpp
+    src/scene/renderer/scene_renderer.h
+    src/scene/renderer/scene_renderer.cpp
+    src/scene/renderer/basic/basic_renderer.h
+    src/scene/renderer/basic/basic_renderer.cpp
     
 )
 

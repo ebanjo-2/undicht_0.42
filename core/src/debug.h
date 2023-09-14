@@ -17,6 +17,7 @@ namespace undicht {
     /// @brief fast way to get a time reference
     /// @return the number of milliseconds since this function was called the first time
     long millis();
+    long micros();
 
 }
 

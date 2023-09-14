@@ -13,33 +13,41 @@
 
 namespace undicht {
 
-    class Scene {
-        /// implementing a scene structure similar to the one described 
-        /// by https://learnopengl.com/Model-Loading/Assimp
-        /// (assimps scene structure)
-      protected:
+    namespace graphics {
 
-        vulkan::LogicalDevice _device_handle;
-        vma::VulkanMemoryAllocator _allocator_handle;
-        
-        std::vector<Mesh> _meshes;
-        std::vector<Material> _materials;
+		class Scene {
+			/// implementing a scene structure similar to the one described 
+			/// by https://learnopengl.com/Model-Loading/Assimp
+			/// (assimps scene structure)
+		  protected:
 
-        Node _root_node;
+			vulkan::LogicalDevice _device_handle;
+			vma::VulkanMemoryAllocator _allocator_handle;
+			
+			std::vector<Mesh> _meshes;
+			std::vector<Material> _materials;
 
-      public:
+			Node _root_node;
 
-        void init(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator);
-        void cleanUp();
-        
-        Mesh& addMesh();
-        Material& addMaterial();
+		  public:
 
-        Node& getRootNode();
-        Mesh& getMesh(uint32_t mesh_id);
-        Material& getMaterial(uint32_t material_id);
+			void init(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator);
+			void cleanUp();
+			
+			Mesh& addMesh();
+			Material& addMaterial();
 
-    };
+			// records the commands to generate the mip maps
+			// for all textures of the materials
+            void genMipMaps(vulkan::CommandBuffer& cmd);
+
+			Node& getRootNode();
+			Mesh& getMesh(uint32_t mesh_id);
+			Material& getMaterial(uint32_t material_id);
+
+		};
+
+	} // graphics
 
 } // undicht
 

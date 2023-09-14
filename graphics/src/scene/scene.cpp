@@ -2,51 +2,63 @@
 
 namespace undicht {
 
-    using namespace vulkan;
-    using namespace vma;
+    namespace graphics {
 
-    void Scene::init(const LogicalDevice& device, VulkanMemoryAllocator& allocator) {
+        using namespace vulkan;
+        using namespace vma;
 
-        _device_handle = device;
-        _allocator_handle = allocator;
-    }
+        void Scene::init(const LogicalDevice& device, VulkanMemoryAllocator& allocator) {
 
-    void Scene::cleanUp() {
+            _device_handle = device;
+            _allocator_handle = allocator;
+        }
 
-        for(Mesh& m : _meshes) m.cleanUp();
-        for(Material& m : _materials) m.cleanUp();
+        void Scene::cleanUp() {
 
-    }
+            for(Mesh& m : _meshes) m.cleanUp();
+            for(Material& m : _materials) m.cleanUp();
 
-    Mesh& Scene::addMesh() {
+        }
 
-        _meshes.emplace_back(Mesh());
-        _meshes.back().init(_device_handle, _allocator_handle);
+        Mesh& Scene::addMesh() {
 
-        return _meshes.back();
-    }
+            _meshes.emplace_back(Mesh());
+            _meshes.back().init(_device_handle, _allocator_handle);
 
-    Material& Scene::addMaterial() {
+            return _meshes.back();
+        }
 
-        _materials.emplace_back(Material());
-        _materials.back().init(_device_handle, _allocator_handle);
+        Material& Scene::addMaterial() {
 
-        return _materials.back();
-    }
+            _materials.emplace_back(Material());
+            _materials.back().init(_device_handle, _allocator_handle);
 
-    Node& Scene::getRootNode() {
+            return _materials.back();
+        }
 
-        return _root_node;
-    }
+        void Scene::genMipMaps(vulkan::CommandBuffer& cmd) {
+            // records the commands to generate the mip maps
 
-    Mesh& Scene::getMesh(uint32_t mesh_id) {
+            for(Material& m : _materials)
+                m.genMipMaps(cmd);
 
-        return _meshes.at(mesh_id);
-    }
+        }
 
-    Material& Scene::getMaterial(uint32_t material_id) {
+        Node& Scene::getRootNode() {
 
-        return _materials.at(material_id);
-    }
+            return _root_node;
+        }
+
+        Mesh& Scene::getMesh(uint32_t mesh_id) {
+
+            return _meshes.at(mesh_id);
+        }
+
+        Material& Scene::getMaterial(uint32_t material_id) {
+
+            return _materials.at(material_id);
+        }
+
+    } // graphics
 
 } // undicht

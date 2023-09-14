@@ -7,146 +7,115 @@
 
 namespace undicht {
 
-    using namespace vulkan;
-    using namespace vma;
+    namespace graphics {
 
-    void Mesh::init(const LogicalDevice& device, VulkanMemoryAllocator& allocator) {
+        using namespace vulkan;
+        using namespace vma;
 
-        _device_handle = device;
-        _allocator_handle = allocator;
-    }
+        void Mesh::init(const LogicalDevice& device, VulkanMemoryAllocator& allocator) {
 
-    void Mesh::cleanUp() {
+            _device_handle = device;
+            _allocator_handle = allocator;
+        }
 
-        _vertex_buffer.cleanUp();
-        _index_buffer.cleanUp();
-    }
+        void Mesh::cleanUp() {
 
-    void Mesh::setVertexData(const char* data, uint32_t byte_size) {
+            _vertex_buffer.cleanUp();
+            _index_buffer.cleanUp();
+        }
 
-        // init the vertex buffer
-        VkBufferUsageFlags usage_flags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-        VmaAllocationCreateFlags vma_flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
-        _vertex_buffer.init(_allocator_handle, {_device_handle.getGraphicsQueueFamily()}, byte_size, usage_flags, vma_flags);
+        void Mesh::setVertexData(const char* data, uint32_t byte_size, TransferBuffer& transfer_buffer) {
 
-        // upload data to the vertex buffer
-        uploadToBuffer(_vertex_buffer, data, byte_size);
+            // init the vertex buffer
+            VkBufferUsageFlags usage_flags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+            VmaAllocationCreateFlags vma_flags = {};
+            _vertex_buffer.init(_allocator_handle, {_device_handle.getGraphicsQueueFamily()}, byte_size, usage_flags, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, vma_flags);
 
-    }
+            // upload data to the vertex buffer
+            transfer_buffer.stageForTransfer(_vertex_buffer.getBuffer(), byte_size, 0, data);
 
-    void Mesh::setIndexData(const char* data, uint32_t byte_size) {
+        }
 
-        // init the face buffer
-        VkBufferUsageFlags usage_flags = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-        VmaAllocationCreateFlags vma_flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
-        _index_buffer.init(_allocator_handle, {_device_handle.getGraphicsQueueFamily()}, byte_size, usage_flags, vma_flags);
+        void Mesh::setIndexData(const char* data, uint32_t byte_size, TransferBuffer& transfer_buffer) {
 
-        // upload data to the vertex buffer
-        uploadToBuffer(_index_buffer, data, byte_size);
+            // init the face buffer
+            VkBufferUsageFlags usage_flags = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+            VmaAllocationCreateFlags vma_flags = {};
+            _index_buffer.init(_allocator_handle, {_device_handle.getGraphicsQueueFamily()}, byte_size, usage_flags, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, vma_flags);
 
-    }
+            // upload data to the vertex buffer
+            transfer_buffer.stageForTransfer(_index_buffer.getBuffer(), byte_size, 0, data);
 
-    void Mesh::setVertexCount(uint32_t count) {
+        }
 
-        _vertex_count = count;
-    }
+        void Mesh::setVertexCount(uint32_t count) {
 
-    void Mesh::setVertexAttributes(bool has_positions, bool has_tex_coords, bool has_normals, bool has_tangents_bitangents) {
+            _vertex_count = count;
+        }
 
-        _has_positions = has_positions;
-        _has_tex_coords = has_tex_coords;
-        _has_normals = has_normals;
-        _has_tangents_and_bitangents = has_tangents_bitangents;
-    }
+        void Mesh::setVertexAttributes(bool has_positions, bool has_tex_coords, bool has_normals, bool has_tangents_bitangents) {
 
-    void Mesh::setMaterialID(uint32_t material_id) {
+            _has_positions = has_positions;
+            _has_tex_coords = has_tex_coords;
+            _has_normals = has_normals;
+            _has_tangents_and_bitangents = has_tangents_bitangents;
+        }
 
-        _material_id = material_id;
-    }
+        void Mesh::setMaterialID(uint32_t material_id) {
 
-    void Mesh::setName(const std::string& name) {
+            _material_id = material_id;
+        }
 
-        _name = name;
-    }
+        void Mesh::setName(const std::string& name) {
 
-    bool Mesh::getHasPositions() const {
-        
-        return _has_positions;
-    }
+            _name = name;
+        }
 
-    bool Mesh::getHasTexCoords() const {
+        bool Mesh::getHasPositions() const {
+            
+            return _has_positions;
+        }
 
-        return _has_tex_coords;
-    }
+        bool Mesh::getHasTexCoords() const {
 
-    bool Mesh::getHasNormals() const {
+            return _has_tex_coords;
+        }
 
-        return _has_normals;
-    }
+        bool Mesh::getHasNormals() const {
 
-    bool Mesh::getHasTangentsBitangents() const {
+            return _has_normals;
+        }
 
-        return _has_tangents_and_bitangents;
-    }
+        bool Mesh::getHasTangentsBitangents() const {
 
-    uint32_t Mesh::getVertexCount() const {
+            return _has_tangents_and_bitangents;
+        }
 
-        return _vertex_count;
-    }
+        uint32_t Mesh::getVertexCount() const {
 
-    uint32_t Mesh::getMaterialID() const {
+            return _vertex_count;
+        }
 
-        return _material_id;
-    }
+        uint32_t Mesh::getMaterialID() const {
 
-    std::string Mesh::getName() const {
+            return _material_id;
+        }
 
-        return _name;
-    }
+        std::string Mesh::getName() const {
 
-    const vulkan::Buffer& Mesh::getVertexBuffer() const {
+            return _name;
+        }
 
-        return _vertex_buffer;
-    }
+        const vulkan::Buffer& Mesh::getVertexBuffer() const {
 
-    const vulkan::Buffer& Mesh::getIndexBuffer() const {
+            return _vertex_buffer;
+        }
 
-        return _index_buffer;
-    }
+        const vulkan::Buffer& Mesh::getIndexBuffer() const {
 
-    ///////////////////////////// non public mesh functions /////////////////////////////
+            return _index_buffer;
+        }
 
-    void Mesh::uploadToBuffer(Buffer& dst, const char* data, uint32_t byte_size) {
-        // using a staging buffer to store data in a buffer that is only visible to the gpu
-
-        // init the staging buffer
-        Buffer staging_buffer;
-        VkBufferUsageFlags tmp_usage_flags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        VmaAllocationCreateFlags tmp_vma_flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
-        staging_buffer.init(_allocator_handle, {_device_handle.getGraphicsQueueFamily()}, byte_size, tmp_usage_flags, tmp_vma_flags);
-
-        // store data in staging buffer
-        staging_buffer.setData(byte_size, 0, data);
-
-        // copy data from staging buffer to vertex buffer
-        VkBufferCopy copy_info = Buffer::createBufferCopy(byte_size, 0, 0);
-        CommandBuffer cmd;
-        cmd.init(_device_handle.getDevice(), _device_handle.getGraphicsCmdPool());
-        cmd.beginCommandBuffer(true);
-        cmd.copy(staging_buffer.getBuffer(), dst.getBuffer(), copy_info);
-        cmd.endCommandBuffer();
-
-        // set up fence as a way to know when the copy operation has finished
-        Fence copy_finished;
-        copy_finished.init(_device_handle.getDevice(), false);
-
-        // submit copy cmd + clean up
-        _device_handle.submitOnGraphicsQueue(cmd.getCommandBuffer(), copy_finished.getFence());
-        copy_finished.waitForProcessToFinish();
-        copy_finished.cleanUp();
-        cmd.cleanUp();
-        staging_buffer.cleanUp();
-
-    }
+    } // graphics
 
 } // undicht

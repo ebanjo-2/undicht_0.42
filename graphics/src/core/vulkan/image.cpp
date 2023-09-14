@@ -4,7 +4,7 @@ namespace undicht {
 
     namespace vulkan {
 
-        void Image::init(vma::VulkanMemoryAllocator& allocator, VkFormat format, VkImageUsageFlags usage, VkExtent3D extent, uint32_t layers, uint32_t mip_levels, uint32_t samples, VkImageCreateFlags flags) {
+        void Image::init(vma::VulkanMemoryAllocator& allocator, VkFormat format, VkExtent3D extent, VkImageUsageFlags usage, VmaMemoryUsage memory_usage, VmaAllocationCreateFlags alloc_flags, uint32_t layers, uint32_t mip_levels, uint32_t samples, VkImageCreateFlags flags) {
             /** initializes the vulkan texture and allocates memory for it
              * @param format you can use undicht::FixedType as a guide to choose a format
              * @param usage for color images use smth similar to VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT
@@ -22,8 +22,8 @@ namespace undicht {
             VkImageCreateInfo image_info = createImageCreateInfo(extent, layers, mip_levels, samples, format, usage, flags);
 
             VmaAllocationCreateInfo alloc_info = {};
-            alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
-            alloc_info.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+            alloc_info.usage = memory_usage;
+            alloc_info.flags = alloc_flags;
             alloc_info.priority = 1.0f;
 
             vmaCreateImage(allocator.getVmaAllocator(), &image_info, &alloc_info, &_image, &_allocation, nullptr);
@@ -32,6 +32,8 @@ namespace undicht {
         }
 
         void Image::cleanUp() {
+
+            if(_image == VK_NULL_HANDLE) return;
 
             vmaDestroyImage(_allocator_handle, _image, _allocation);
         }
@@ -109,7 +111,7 @@ namespace undicht {
             return barrier;
         }
 
-        VkBufferImageCopy Image::createBufferImageCopy(VkExtent3D image_extent, VkOffset3D image_offset, VkImageAspectFlags flags, uint32_t layer, uint32_t mip_level, uint32_t src_offset) {
+        VkBufferImageCopy Image::createBufferImageCopy(VkExtent3D data_extent, VkOffset3D image_offset, VkImageAspectFlags flags, uint32_t layer, uint32_t mip_level, uint32_t src_offset) {
 
             VkBufferImageCopy region{};
             region.bufferOffset = src_offset; // layout of the data in the buffer
@@ -122,7 +124,7 @@ namespace undicht {
             region.imageSubresource.layerCount = 1;
 
             region.imageOffset = image_offset;
-            region.imageExtent = image_extent;
+            region.imageExtent = data_extent;
 
             return region;
         }
