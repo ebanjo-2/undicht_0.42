@@ -1,4 +1,4 @@
-# Ignore all
+# Ignore all (to include files with no extension)
 *
 
 # Unignore all with extensions
@@ -59,3 +59,6 @@ cmake-build-debug/
 *.app
 *.spv
 CMakeSettings.json
+
+# visual studio debug files
+*.pdb

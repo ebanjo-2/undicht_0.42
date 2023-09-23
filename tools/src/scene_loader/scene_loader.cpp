@@ -99,7 +99,7 @@ namespace undicht {
 
             }
 
-            load_to.setVertexData((const char*)vertex_data.data(), vertex_data.size() * sizeof(ai_real), transfer_buffer);
+            load_to.setVertexData((const uint8_t*)vertex_data.data(), vertex_data.size() * sizeof(ai_real), transfer_buffer);
         }
 
         void SceneLoader::processAssimpFaces(const aiMesh* assimp_mesh, Mesh& load_to, TransferBuffer& transfer_buffer) {
@@ -107,19 +107,19 @@ namespace undicht {
             std::vector<uint32_t> face_ids;
 
             // going through all faces that make up the mesh
-            for(int i = 0; i < assimp_mesh->mNumFaces; i++) {
+            for(unsigned int i = 0; i < assimp_mesh->mNumFaces; i++) {
 
                 const aiFace& assimp_face = assimp_mesh->mFaces[i];
 
                 // going through all the indices that make up a face
-                for(int j = 0; j < assimp_face.mNumIndices; j++) {
+                for(unsigned int j = 0; j < assimp_face.mNumIndices; j++) {
 
                     face_ids.push_back(assimp_face.mIndices[j]);
                 }
 
             }
 
-            load_to.setIndexData((const char*)face_ids.data(), face_ids.size() * sizeof(uint32_t), transfer_buffer);
+            load_to.setIndexData((const uint8_t*)face_ids.data(), face_ids.size() * sizeof(uint32_t), transfer_buffer);
             load_to.setVertexCount(face_ids.size());
         }
 
@@ -167,7 +167,7 @@ namespace undicht {
             load_to.setMeshes(meshes);
 
             // recursivly processing the child nodes
-            for(int i = 0; i < assimp_node->mNumChildren; i++) {
+            for(unsigned int i = 0; i < assimp_node->mNumChildren; i++) {
 
                 processAssimpNode(assimp_node->mChildren[i], load_to.addChildNode());
             }

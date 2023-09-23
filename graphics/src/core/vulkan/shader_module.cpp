@@ -24,6 +24,8 @@ namespace undicht {
 
             // open the file, with the read position starting at the end
             std::ifstream file(src_file, std::ios::ate | std::ios::binary);
+
+            if(!file.is_open()) UND_ERROR << "failed to open shader file: " << src_file << "\n";
             assert(file.is_open());
             
             // get the size of the file

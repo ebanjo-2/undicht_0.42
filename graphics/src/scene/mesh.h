@@ -47,8 +47,8 @@ namespace undicht {
             void init(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator);
             void cleanUp();
 
-            void setVertexData(const char* data, uint32_t byte_size, vulkan::TransferBuffer& transfer_buffer);
-            void setIndexData(const char* data, uint32_t byte_size, vulkan::TransferBuffer& transfer_buffer);
+            void setVertexData(const uint8_t* data, uint32_t byte_size, vulkan::TransferBuffer& transfer_buffer);
+            void setIndexData(const uint8_t* data, uint32_t byte_size, vulkan::TransferBuffer& transfer_buffer);
 
             void setVertexCount(uint32_t count);
             void setVertexAttributes(bool has_positions, bool has_tex_coords, bool has_normals, bool has_tangents_bitangents);

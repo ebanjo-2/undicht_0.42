@@ -155,7 +155,7 @@ namespace undicht {
 		bool XmlFile::removeIndentation(std::string& str) {
 			/// removes all free space characters in front of the '<'
 
-			int tag_start = str.find("<");
+			size_t tag_start = str.find("<");
 			if (tag_start == std::string::npos) {
 				// no tag
 				return false;

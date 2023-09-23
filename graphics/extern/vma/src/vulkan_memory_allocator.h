@@ -1,7 +1,7 @@
 #ifndef VMA_GLOBAL_ALLOCATOR_H
 #define VMA_GLOBAL_ALLOCATOR_H
 
-#include "vk_mem_alloc.h"
+#include "vma/vk_mem_alloc.h"
 #include "vulkan/vulkan.h"
 
 namespace undicht {

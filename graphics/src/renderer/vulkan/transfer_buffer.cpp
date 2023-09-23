@@ -19,7 +19,7 @@ namespace undicht {
             Buffer::cleanUp();
         }
 
-        void TransferBuffer::stageForTransfer(VkBuffer dst, uint32_t byte_size, uint32_t offset, const void* data) {
+        void TransferBuffer::stageForTransfer(VkBuffer dst, uint32_t byte_size, uint32_t offset, const uint8_t* data) {
             /// stores the data in the transfer buffer and creates the info structs necessary to
             /// tell vulkan to copy the data into the destination buffer / image
 
@@ -42,7 +42,7 @@ namespace undicht {
 
         }
 
-        void TransferBuffer::stageForTransfer(VkImage dst, const void* data,  uint32_t byte_size, VkExtent3D data_extent, VkOffset3D offset, uint32_t layer, uint32_t mip_level, VkImageLayout initial_layout, VkImageLayout final_layout, VkAccessFlags initial_access, VkAccessFlags final_access) {
+        void TransferBuffer::stageForTransfer(VkImage dst, const uint8_t* data,  uint32_t byte_size, VkExtent3D data_extent, VkOffset3D offset, uint32_t layer, uint32_t mip_level, VkImageLayout initial_layout, VkImageLayout final_layout, VkAccessFlags initial_access, VkAccessFlags final_access) {
             
             if(getAllocatedSize() < (_bytes_stored + byte_size)) {
                 UND_ERROR << "Failed to store Data in transfer buffer: not enough memory allocated\n";

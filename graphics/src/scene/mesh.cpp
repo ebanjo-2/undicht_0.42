@@ -24,7 +24,7 @@ namespace undicht {
             _index_buffer.cleanUp();
         }
 
-        void Mesh::setVertexData(const char* data, uint32_t byte_size, TransferBuffer& transfer_buffer) {
+        void Mesh::setVertexData(const uint8_t* data, uint32_t byte_size, TransferBuffer& transfer_buffer) {
 
             // init the vertex buffer
             VkBufferUsageFlags usage_flags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
@@ -36,7 +36,7 @@ namespace undicht {
 
         }
 
-        void Mesh::setIndexData(const char* data, uint32_t byte_size, TransferBuffer& transfer_buffer) {
+        void Mesh::setIndexData(const uint8_t* data, uint32_t byte_size, TransferBuffer& transfer_buffer) {
 
             // init the face buffer
             VkBufferUsageFlags usage_flags = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;

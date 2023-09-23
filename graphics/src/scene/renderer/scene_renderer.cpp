@@ -59,8 +59,8 @@ namespace undicht {
 
         void SceneRenderer::loadCameraMatrices(float* mat4_view, float* mat4_proj, TransferBuffer& transfer_buffer) {
 
-            _uniform_buffer.uploadData(0, mat4_view, transfer_buffer);
-            _uniform_buffer.uploadData(1, mat4_proj, transfer_buffer);
+            _uniform_buffer.uploadData(0, (const uint8_t*)mat4_view, transfer_buffer);
+            _uniform_buffer.uploadData(1, (const uint8_t*)mat4_proj, transfer_buffer);
 
         }
 

@@ -44,8 +44,8 @@ namespace undicht {
 
             /// stores the data in the transfer buffer and creates the info structs necessary to
             /// tell vulkan to copy the data into the destination buffer / image
-            void stageForTransfer(VkBuffer dst, uint32_t byte_size, uint32_t offset, const void* data);
-            void stageForTransfer(VkImage dst, const void* data,  uint32_t byte_size, VkExtent3D data_extent, VkOffset3D offset = {0,0,0}, uint32_t layer = 0, uint32_t mip_level = 0, VkImageLayout initial_layout = VK_IMAGE_LAYOUT_UNDEFINED, VkImageLayout final_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VkAccessFlags initial_access = VK_ACCESS_NONE, VkAccessFlags final_access = VK_ACCESS_SHADER_READ_BIT);
+            void stageForTransfer(VkBuffer dst, uint32_t byte_size, uint32_t offset, const uint8_t* data);
+            void stageForTransfer(VkImage dst, const uint8_t* data,  uint32_t byte_size, VkExtent3D data_extent, VkOffset3D offset = {0,0,0}, uint32_t layer = 0, uint32_t mip_level = 0, VkImageLayout initial_layout = VK_IMAGE_LAYOUT_UNDEFINED, VkImageLayout final_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VkAccessFlags initial_access = VK_ACCESS_NONE, VkAccessFlags final_access = VK_ACCESS_SHADER_READ_BIT);
 
             /// records the commands needed to copy the data to the buffers / images
             /// if the destination is an image, pipeline barriers will be added to get the image in the correct layout

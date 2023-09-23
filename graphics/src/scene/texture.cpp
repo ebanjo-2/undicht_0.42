@@ -41,7 +41,7 @@ namespace undicht {
             _image_view.init(_device_handle.getDevice(), _image.getImage(), translate(_format), _mip_levels);
 
             // store data in image
-            transfer_buffer.stageForTransfer(_image.getImage(), data, width * height * nr_channels, _extent);
+            transfer_buffer.stageForTransfer(_image.getImage(), (const uint8_t*)data, width * height * nr_channels, _extent);
 
         }
 

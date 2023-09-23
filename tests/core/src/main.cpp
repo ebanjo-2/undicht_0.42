@@ -16,7 +16,7 @@ int main() {
     // config.h
 #ifdef PLATFORM_UNIX
     UND_LOG << "Platform: Unix\n";
-#elif PLATFORM_WINDOWS
+#elif(defined(PLATFORM_WINDOWS))
     UND_LOG << "Platform: Windows\n";
 #else
     UND_WARNING << "Unknown Platform!\n";
