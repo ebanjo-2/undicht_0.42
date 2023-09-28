@@ -74,8 +74,8 @@ namespace undicht {
             
             csv_file << "\"" << t._name << "\"" << ",";
             csv_file << std::distance(unique_task_names.begin(), unique_task_names.find(t._name)) << ",";
-            csv_file << t._start_time / 1000 << "." << t._start_time % 1000 << ","; // convert to millis
-            csv_file << t._end_time / 1000 << "." << t._end_time % 1000 << ","; // convert to millis
+            csv_file << t._start_time / 1000 << "." << (t._start_time / 100) % 10 << (t._start_time / 10) % 10  << t._start_time % 10 << ","; // convert to millis
+            csv_file << t._end_time / 1000 << "." << (t._end_time / 100) % 10 << (t._end_time / 10) % 10  << t._end_time % 10 << ",";; // convert to millis
             csv_file << t._end_time - t._start_time << std::endl;
         
         }
