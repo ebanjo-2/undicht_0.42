@@ -2,6 +2,7 @@
 #include "file_tools.h"
 #include "core/vulkan/formats.h"
 #include "debug.h"
+#include "profiler.h"
 
 namespace undicht {
 
@@ -73,7 +74,7 @@ namespace undicht {
 
             cmd.beginRenderPass(_render_pass.getRenderPass(), _framebuffers.at(swap_image_id).getFramebuffer(), _framebuffers.at(swap_image_id).getExtent(), {clear_color, clear_depth});
 
-            _global_descriptor_cache.reset();
+            //_global_descriptor_cache.reset();
 
         }
 
@@ -87,8 +88,10 @@ namespace undicht {
 
             // bind camera ubo
             DescriptorSet& descriptor_set = _global_descriptor_cache.allocate();
-            descriptor_set.bindUniformBuffer(0, _uniform_buffer);
-            descriptor_set.update();
+            PROFILE_SCOPE("update global descriptor set",
+                descriptor_set.bindUniformBuffer(0, _uniform_buffer);
+                descriptor_set.update();
+            )
 
             // only one renderer used for now
             _basic_renderer.begin(cmd, descriptor_set.getDescriptorSet());

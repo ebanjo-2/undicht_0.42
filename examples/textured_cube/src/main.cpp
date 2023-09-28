@@ -21,6 +21,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "profiler.h"
+
 using namespace undicht;
 using namespace graphics;
 using namespace vulkan;
@@ -31,6 +33,7 @@ int main() {
     // initializing the engine and opening a window
     Application app;
     app.init("Textured cube", VK_PRESENT_MODE_IMMEDIATE_KHR);
+    Profiler::enableProfiler(true);
 
     UND_LOG << "initialized the app\n";
     
@@ -45,10 +48,6 @@ int main() {
     image_acquired_semaphore.init(app.getDevice().getDevice());
     Fence render_finished_fence;
     render_finished_fence.init(app.getDevice().getDevice(), true);
-
-    // setting up the command buffer
-    CommandBuffer cmd_buffer;
-    cmd_buffer.init(app.getDevice().getDevice(), app.getDevice().getGraphicsCmdPool());
 
     // setting up the renderer
     SceneRenderer renderer;
@@ -102,35 +101,53 @@ int main() {
     uint32_t last_millis = millis();
     uint32_t num_frames_since_fps = 0;
 
+    // setting up the draw command buffers
+    std::vector<CommandBuffer> cmd_buffers(app.getSwapChain().getSwapImageCount());
+
+    PROFILE_SCOPE("record command buffer",
+        for(int i = 0; i < cmd_buffers.size(); i++) {
+            cmd_buffers[i].init(app.getDevice().getDevice(), app.getDevice().getGraphicsCmdPool());
+            cmd_buffers[i].beginCommandBuffer(false);
+            renderer.begin(cmd_buffers[i], image_acquired_semaphore, i);
+            renderer.draw(cmd_buffers[i], scene);
+            renderer.end(cmd_buffers[i]);
+            cmd_buffers[i].endCommandBuffer();
+        }
+    )
+
     // render loop
     while(!app.getWindow().shouldClose()) {
+
+        Profiler main_loop("main loop");
 
         if(num_frames_since_fps > 100) {
             num_frames_since_fps = 0;
             UND_LOG << "FPS: " << 100.0f * 1000.0f / (millis() - last_millis) << "\n";
             last_millis = millis();
+            Profiler::enableProfiler(false); // only record first 100 frames
         }
 
         num_frames_since_fps++;
 
         // wait for previous frame to finish
-        render_finished_fence.waitForProcessToFinish();
+        PROFILE_SCOPE("waiting for previous render finished",render_finished_fence.waitForProcessToFinish();)
 
         // acquire image to render to
-        int image_id = app.getSwapChain().acquireNextSwapImage(image_acquired_semaphore.getAsSignal());
+        int image_id;
+        PROFILE_SCOPE("acquire next image",
+            image_id = app.getSwapChain().acquireNextSwapImage(image_acquired_semaphore.getAsSignal());
+        )
 
         if(image_id != -1) {
 
-            // record command buffer
-            cmd_buffer.beginCommandBuffer(true);
-            renderer.begin(cmd_buffer, image_acquired_semaphore, image_id);
-            renderer.draw(cmd_buffer, scene);
-            renderer.end(cmd_buffer);
-            cmd_buffer.endCommandBuffer();
-
             // submit command buffer
-            app.getDevice().submitOnGraphicsQueue(cmd_buffer.getCommandBuffer(), render_finished_fence.getFence(), {image_acquired_semaphore.getAsWaitOn()}, {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}, {render_finished_semaphore.getAsSignal()});
-            app.getDevice().presentOnPresentQueue(app.getSwapChain().getSwapchain(), image_id, {render_finished_semaphore.getAsWaitOn()});
+            PROFILE_SCOPE("submit cmd buffer",
+                app.getDevice().submitOnGraphicsQueue(cmd_buffers[image_id].getCommandBuffer(), render_finished_fence.getFence(), {image_acquired_semaphore.getAsWaitOn()}, {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}, {render_finished_semaphore.getAsSignal()});
+            )
+
+            PROFILE_SCOPE("present image",
+                app.getDevice().presentOnPresentQueue(app.getSwapChain().getSwapchain(), image_id, {render_finished_semaphore.getAsWaitOn()});
+            )
 
         } else {
             // recreate the swap chain
@@ -145,9 +162,14 @@ int main() {
 
         }
 
-        app.getWindow().update();
+        PROFILE_SCOPE("update window",
+            app.getWindow().update();
+        )
 
     }
+
+    // save performance data
+    Profiler::writeToCsvFile("performance.csv");
 
     // cleanup
     app.getDevice().waitForProcessesToFinish();
@@ -155,7 +177,7 @@ int main() {
     renderer.cleanUp(app.getSwapChain());
     scene.cleanUp();
     vulkan_allocator.cleanUp();
-    cmd_buffer.cleanUp();
+    for(CommandBuffer& cmd : cmd_buffers) cmd.cleanUp();
     render_finished_semaphore.cleanUp();
     image_acquired_semaphore.cleanUp();
     render_finished_fence.cleanUp();

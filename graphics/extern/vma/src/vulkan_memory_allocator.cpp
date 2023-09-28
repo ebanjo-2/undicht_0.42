@@ -1,5 +1,8 @@
 #define VMA_IMPLEMENTATION
-#include "vma/vk_mem_alloc.h"
+
+// one of these should work (idk why, but for some reason the header isnt in a vma directory in linux)
+// #include "vma/vk_mem_alloc.h"
+#include "vk_mem_alloc.h"
 
 #include "vulkan_memory_allocator.h"
 

@@ -62,3 +62,6 @@ CMakeSettings.json
 
 # visual studio debug files
 *.pdb
+
+# performance profiler files
+*.csv

@@ -13,6 +13,9 @@ add_library("core" STATIC
 	
 	src/file_tools.h
 	src/file_tools.cpp
+	
+	src/profiler.h
+	src/profiler.cpp
 	        
 )
 

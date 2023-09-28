@@ -1,6 +1,7 @@
 #include "basic_renderer.h"
 #include "file_tools.h"
 #include "core/vulkan/formats.h"
+#include "profiler.h"
 
 namespace undicht {
 
@@ -42,7 +43,7 @@ namespace undicht {
 
         void BasicRenderer::begin(vulkan::CommandBuffer& draw_cmd, VkDescriptorSet global_descriptor_set) {
 
-            _descriptor_cache.reset();
+            //_descriptor_cache.reset();
             draw_cmd.bindGraphicsPipeline(_pipeline.getPipeline());
             draw_cmd.bindDescriptorSet(global_descriptor_set, _pipeline.getPipelineLayout());
 
