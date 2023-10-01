@@ -15,7 +15,8 @@ namespace undicht {
         }
 
         void TransferBuffer::cleanUp() {
-
+            
+            reset();
             Buffer::cleanUp();
         }
 
@@ -88,6 +89,17 @@ namespace undicht {
                 
             }
 
+        }
+
+        void TransferBuffer::reset() {
+            /// @brief call before reusing the transfer buffer
+            /// all the transfers should be completed at this point, as the info structs for transfering the data to buffers / images will be deleted
+
+            _buffer_copies.clear();
+            _image_copies.clear();
+
+            _bytes_stored = 0;
+            
         }
 
     } // vulkan

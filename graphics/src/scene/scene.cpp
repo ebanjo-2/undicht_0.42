@@ -11,6 +11,7 @@ namespace undicht {
 
             _device_handle = device;
             _allocator_handle = allocator;
+
         }
 
         void Scene::cleanUp() {
@@ -28,10 +29,10 @@ namespace undicht {
             return _meshes.back();
         }
 
-        Material& Scene::addMaterial() {
+        Material& Scene::addMaterial(vulkan::DescriptorSetCache& material_descriptor_cache) {
 
             _materials.emplace_back(Material());
-            _materials.back().init(_device_handle, _allocator_handle);
+            _materials.back().init(_device_handle, _allocator_handle, material_descriptor_cache);
 
             return _materials.back();
         }

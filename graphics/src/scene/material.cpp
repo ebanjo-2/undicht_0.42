@@ -7,10 +7,12 @@ namespace undicht {
 
         using namespace vulkan;
         
-        void Material::init(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator) {
+        void Material::init(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& descriptor_cache) {
 
             _device_handle = device;
             _allocator_handle = allocator;
+
+            _descriptor_set = descriptor_cache.allocate();
 
         }
 
@@ -50,6 +52,26 @@ namespace undicht {
                 diffuse->genMipMaps(cmd);
             }
 
+        }
+
+        void Material::updateDescriptorSet(const vulkan::Sampler& sampler) {
+            /// @brief should be called after changes to the resources of the material were made
+
+            Texture* diffuse = (Texture*)getTexture(Texture::Type::DIFFUSE);
+
+            if(diffuse && (diffuse->getImage().getImage() != VK_NULL_HANDLE)) {
+
+                _descriptor_set.bindImage(0, diffuse->getImageView().getImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, sampler.getSampler());
+                _descriptor_set.update();
+
+            }
+
+        }
+
+        const vulkan::DescriptorSet& Material::getDescriptorSet() const {
+            /// @return a descriptor set which binds the resources that define the material
+
+            return _descriptor_set;
         }
 
     } // graphics

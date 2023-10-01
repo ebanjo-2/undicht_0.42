@@ -43,8 +43,12 @@ namespace undicht {
 
             vulkan::DescriptorSetLayout _global_descriptor_layout;
             vulkan::DescriptorSetCache _global_descriptor_cache;
+            vulkan::DescriptorSetLayout _material_descriptor_layout;
+            vulkan::DescriptorSetCache _material_descriptor_cache;
+            vulkan::Sampler _material_sampler;
 
             vulkan::UniformBuffer _uniform_buffer;
+            vulkan::DescriptorSet _global_descriptor_set;
 
             BasicRenderer _basic_renderer;
 
@@ -58,12 +62,15 @@ namespace undicht {
             void loadCameraMatrices(float* mat4_view, float* mat4_proj, vulkan::TransferBuffer& transfer_buffer);
 
             // drawing
-            void begin(vulkan::CommandBuffer& cmd, vulkan::Semaphore& swap_image_ready, uint32_t swap_image_id);
+            void begin(vulkan::CommandBuffer& cmd, uint32_t swap_image_id);
             void end(vulkan::CommandBuffer& cmd);
             
             /// @return the number of draw calls that were made
             uint32_t draw(vulkan::CommandBuffer& cmd, Scene& scene);
             uint32_t draw(vulkan::CommandBuffer& cmd, Scene& scene, Node& node);
+
+            vulkan::DescriptorSetCache& getMaterialDescriptorCache();
+            vulkan::Sampler& getMaterialSampler();
 
           protected:
             // non public functions 
@@ -74,6 +81,7 @@ namespace undicht {
             void initUniformBuffer(vma::VulkanMemoryAllocator& allocator);
             void initDescriptorLayout();
             void initDescriptorCache();
+            void initSampler();
 
             void cleanUpFramebuffers();
             void cleanUpDepthImages();

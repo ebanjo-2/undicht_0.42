@@ -9,27 +9,21 @@ namespace undicht {
 
         using namespace vulkan;
 
-        void BasicRenderer::init(VkDevice device, VkRenderPass render_pass, VkDescriptorSetLayout global_descriptor_layout, VkExtent2D view_port) {
+        void BasicRenderer::init(VkDevice device, VkRenderPass render_pass, VkDescriptorSetLayout global_descriptor_layout, VkDescriptorSetLayout material_descriptor_layout, VkExtent2D view_port) {
 
             _device_handle = device;
             _render_pass_handle = render_pass;
 
             initShaderModules();
-            initDescriptorLayout();
-            initDescriptorCache();
-            initPipeLine(view_port, global_descriptor_layout, render_pass);
-            initSampler();
+            initPipeLine(view_port, global_descriptor_layout, material_descriptor_layout, render_pass);
 
         }
 
         void BasicRenderer::cleanUp() {
 
-            _descriptor_layout.cleanUp();
-            _descriptor_cache.cleanUp();
             _vertex_shader.cleanUp();
             _fragment_shader.cleanUp();
             _pipeline.cleanUp();
-            _sampler.cleanUp();
 
         }
 
@@ -43,7 +37,6 @@ namespace undicht {
 
         void BasicRenderer::begin(vulkan::CommandBuffer& draw_cmd, VkDescriptorSet global_descriptor_set) {
 
-            //_descriptor_cache.reset();
             draw_cmd.bindGraphicsPipeline(_pipeline.getPipeline());
             draw_cmd.bindDescriptorSet(global_descriptor_set, _pipeline.getPipelineLayout());
 
@@ -70,17 +63,11 @@ namespace undicht {
 
                 // retrieve the meshes material
                 Material& mat = scene.getMaterial(mesh->getMaterialID());
-                const Texture* diff_tex = mat.getTexture(Texture::Type::DIFFUSE);
 
-                if(!diff_tex) continue; // cant draw that mesh
-
-                // update the descriptor set
-                DescriptorSet& descriptor_set = _descriptor_cache.allocate();
-                descriptor_set.bindImage(0, diff_tex->getImageView().getImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, _sampler.getSampler());
-                descriptor_set.update();
+                if(!mat.getTexture(Texture::Type::DIFFUSE)) continue; // cant draw that mesh
 
                 // bind the mesh resources
-                cmd.bindDescriptorSet(descriptor_set.getDescriptorSet(), _pipeline.getPipelineLayout(), 1);
+                cmd.bindDescriptorSet(mat.getDescriptorSet().getDescriptorSet(), _pipeline.getPipelineLayout(), 1);
                 cmd.bindVertexBuffer(mesh->getVertexBuffer().getBuffer(), 0);
                 cmd.bindIndexBuffer(mesh->getIndexBuffer().getBuffer());
 
@@ -105,12 +92,12 @@ namespace undicht {
 
         }
 
-        void BasicRenderer::initPipeLine(VkExtent2D view_port, VkDescriptorSetLayout global_descriptor_layout, VkRenderPass render_pass) {
+        void BasicRenderer::initPipeLine(VkExtent2D view_port, VkDescriptorSetLayout global_descriptor_layout, VkDescriptorSetLayout& material_descriptor_layout, VkRenderPass render_pass) {
 
             _pipeline.addShaderModule(_vertex_shader);
             _pipeline.addShaderModule(_fragment_shader);
             _pipeline.setShaderInput(global_descriptor_layout, 0);
-            _pipeline.setShaderInput(_descriptor_layout.getLayout(), 1);
+            _pipeline.setShaderInput(material_descriptor_layout, 1);
             _pipeline.setBlending(0, false);
             _pipeline.setDepthStencilState(true);
             _pipeline.setInputAssembly(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
@@ -123,35 +110,6 @@ namespace undicht {
             _pipeline.addVertexAttribute(0, 2, 6 * sizeof(float), translate(UND_VEC3F)); // normal
 
             _pipeline.init(_device_handle, render_pass);
-
-        }
-
-        void BasicRenderer::initDescriptorLayout() {
-
-            std::vector<VkDescriptorType> descriptor_types = {
-                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-            };
-
-
-            std::vector<VkShaderStageFlagBits> shader_stages = {
-                VK_SHADER_STAGE_ALL_GRAPHICS,
-            };
-
-            _descriptor_layout.init(_device_handle, descriptor_types, shader_stages);
-
-        }
-
-        void BasicRenderer::initDescriptorCache() {
-
-            // there will be a descriptor set allocted for every mesh, 5000 may or may not be enough
-            _descriptor_cache.init(_device_handle, _descriptor_layout, 5000);
-        }
-
-        void BasicRenderer::initSampler() {
-            
-            _sampler.setMinFilter(VK_FILTER_LINEAR);
-            _sampler.setMipMapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR);
-            _sampler.init(_device_handle);
 
         }
 

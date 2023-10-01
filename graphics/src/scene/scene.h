@@ -23,6 +23,7 @@ namespace undicht {
 
 			vulkan::LogicalDevice _device_handle;
 			vma::VulkanMemoryAllocator _allocator_handle;
+			vulkan::DescriptorSetCache _material_descriptor_chache_handle;
 			
 			std::vector<Mesh> _meshes;
 			std::vector<Material> _materials;
@@ -35,7 +36,7 @@ namespace undicht {
 			void cleanUp();
 			
 			Mesh& addMesh();
-			Material& addMaterial();
+			Material& addMaterial(vulkan::DescriptorSetCache& descriptor_cache);
 
 			// records the commands to generate the mip maps
 			// for all textures of the materials

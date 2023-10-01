@@ -14,7 +14,7 @@ namespace undicht {
         using namespace graphics;
         using namespace vulkan;
 
-        void SceneLoader::importScene(const std::string& file_name, Scene& load_to, TransferBuffer& transfer_buffer) {
+        void SceneLoader::importScene(const std::string& file_name, Scene& load_to, TransferBuffer& transfer_buffer, vulkan::DescriptorSetCache& material_descriptor_cache, vulkan::Sampler& sampler) {
             // following the tutorial: https://learnopengl.com/Model-Loading/Model
 
             // getting the working directory from the file_name
@@ -28,7 +28,7 @@ namespace undicht {
             if(assimp_scene == nullptr) return;
 
             // loading the data from the assimp scene into the load_to scene
-            processAssimpScene(assimp_scene, load_to, directory, transfer_buffer);
+            processAssimpScene(assimp_scene, load_to, directory, transfer_buffer, material_descriptor_cache, sampler);
 
         }
 
@@ -47,7 +47,7 @@ namespace undicht {
             return scene;
         }
 
-        void SceneLoader::processAssimpScene(const aiScene* assimp_scene, Scene& load_to, const std::string& directory, TransferBuffer& transfer_buffer) {
+        void SceneLoader::processAssimpScene(const aiScene* assimp_scene, Scene& load_to, const std::string& directory, TransferBuffer& transfer_buffer, vulkan::DescriptorSetCache& material_descriptor_cache, vulkan::Sampler& sampler) {
 
             // process all meshes
             for(int i = 0; i < assimp_scene->mNumMeshes; i++) {
@@ -58,7 +58,7 @@ namespace undicht {
             // process all materials
             for(int i = 0; i < assimp_scene->mNumMaterials; i++) {
 
-                processAssimpMaterial(assimp_scene->mMaterials[i], load_to.addMaterial(), directory, transfer_buffer);
+                processAssimpMaterial(assimp_scene->mMaterials[i], load_to.addMaterial(material_descriptor_cache), directory, transfer_buffer, sampler);
             }
 
             // process all nodes (recursive)
@@ -132,7 +132,7 @@ namespace undicht {
 
 		/////////////////////////////////////// functions to process Materials ///////////////////////////////////////
 
-        void SceneLoader::processAssimpMaterial(const aiMaterial* assimp_material, Material& load_to, const std::string& directory, TransferBuffer& transfer_buffer) {
+        void SceneLoader::processAssimpMaterial(const aiMaterial* assimp_material, Material& load_to, const std::string& directory, TransferBuffer& transfer_buffer, vulkan::Sampler& sampler) {
 
             // string to store the textures file name
             aiString file_name;
@@ -154,6 +154,8 @@ namespace undicht {
 
                 UND_LOG << "loaded specular texture: " << file_name.C_Str() << "\n";
             }
+
+            load_to.updateDescriptorSet(sampler);
 
         }
 

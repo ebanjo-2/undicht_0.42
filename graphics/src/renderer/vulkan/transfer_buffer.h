@@ -52,6 +52,10 @@ namespace undicht {
             /// endCommandBuffer() needs to be called on the command buffer before it can be submitted on a queue 
             void completeTransfers(CommandBuffer& cmd);
 
+            /// @brief call before reusing the transfer buffer
+            /// all the transfers should be completed at this point, as the info structs for transfering the data to buffers / images will be deleted
+            void reset();
+
         };
 
     } // vulkan

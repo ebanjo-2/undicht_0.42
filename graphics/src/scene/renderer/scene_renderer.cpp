@@ -21,8 +21,12 @@ namespace undicht {
             initUniformBuffer(allocator);
             initDescriptorLayout();
             initDescriptorCache();
+            initSampler();
 
-            _basic_renderer.init(device.getDevice(), _render_pass.getRenderPass(), _global_descriptor_layout.getLayout(), swap_chain.getExtent());
+            _basic_renderer.init(device.getDevice(), _render_pass.getRenderPass(), _global_descriptor_layout.getLayout(), _material_descriptor_layout.getLayout(), swap_chain.getExtent());
+
+            _global_descriptor_set.bindUniformBuffer(0, _uniform_buffer);
+            _global_descriptor_set.update();
 
         }
 
@@ -35,8 +39,11 @@ namespace undicht {
             cleanUpFramebuffers();
 
             _uniform_buffer.cleanUp();
+            _material_sampler.cleanUp();
             _global_descriptor_layout.cleanUp();
             _global_descriptor_cache.cleanUp();
+            _material_descriptor_layout.cleanUp();
+            _material_descriptor_cache.cleanUp();
             _render_pass.cleanUp();
 
         }
@@ -67,14 +74,12 @@ namespace undicht {
 
         ////////////////////////////////////// drawing //////////////////////////////////////
 
-        void SceneRenderer::begin(vulkan::CommandBuffer& cmd, vulkan::Semaphore& swap_image_ready, uint32_t swap_image_id) {
+        void SceneRenderer::begin(vulkan::CommandBuffer& cmd, uint32_t swap_image_id) {
             
             VkClearValue clear_color = {0.2f, 0.2f, 0.2f, 0.0f};
             VkClearValue clear_depth = {1.0f, 0.0f};
 
             cmd.beginRenderPass(_render_pass.getRenderPass(), _framebuffers.at(swap_image_id).getFramebuffer(), _framebuffers.at(swap_image_id).getExtent(), {clear_color, clear_depth});
-
-            //_global_descriptor_cache.reset();
 
         }
 
@@ -86,15 +91,8 @@ namespace undicht {
         uint32_t SceneRenderer::draw(vulkan::CommandBuffer& cmd, Scene& scene) {
             /// @return the number of draw calls that were made
 
-            // bind camera ubo
-            DescriptorSet& descriptor_set = _global_descriptor_cache.allocate();
-            PROFILE_SCOPE("update global descriptor set",
-                descriptor_set.bindUniformBuffer(0, _uniform_buffer);
-                descriptor_set.update();
-            )
-
             // only one renderer used for now
-            _basic_renderer.begin(cmd, descriptor_set.getDescriptorSet());
+            _basic_renderer.begin(cmd, _global_descriptor_set.getDescriptorSet());
 
             // will draw the entire scene recursivly
             uint32_t draw_calls = draw(cmd, scene, scene.getRootNode());
@@ -116,6 +114,16 @@ namespace undicht {
             }
 
             return draw_calls;
+        }
+
+        vulkan::DescriptorSetCache& SceneRenderer::getMaterialDescriptorCache() {
+
+            return _material_descriptor_cache;
+        }
+
+        vulkan::Sampler& SceneRenderer::getMaterialSampler() {
+
+            return _material_sampler;
         }
 
         /////////////////////////////// non public renderer functions ///////////////////////
@@ -161,18 +169,27 @@ namespace undicht {
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
             };
 
+            std::vector<VkDescriptorType> material_descriptors = {
+                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            };
+
             std::vector<VkShaderStageFlagBits> shader_stages = {
                 VK_SHADER_STAGE_ALL_GRAPHICS,
             };
 
             _global_descriptor_layout.init(_device_handle.getDevice(), global_descriptors, shader_stages);
+            _material_descriptor_layout.init(_device_handle.getDevice(), material_descriptors, shader_stages);
 
         }
 
         void SceneRenderer::initDescriptorCache() {
 
-            // there will be a descriptor for every frame
-            _global_descriptor_cache.init(_device_handle.getDevice(), _global_descriptor_layout, 3);
+            // descriptor to bind the global uniform buffer
+            _global_descriptor_cache.init(_device_handle.getDevice(), _global_descriptor_layout, 1);
+            _global_descriptor_set = _global_descriptor_cache.allocate();
+
+            // there will be a descriptor set allocted for every material, 5000 may or may not be enough
+            _material_descriptor_cache.init(_device_handle.getDevice(), _material_descriptor_layout, 5000);
 
         }
 
@@ -184,6 +201,14 @@ namespace undicht {
             const BufferLayout ubo_layout({UND_MAT4F, UND_MAT4F});
 
             _uniform_buffer.init(_device_handle, allocator, ubo_layout);
+
+        }
+
+        void SceneRenderer::initSampler() {
+            
+            _material_sampler.setMinFilter(VK_FILTER_LINEAR);
+            _material_sampler.setMipMapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR);
+            _material_sampler.init(_device_handle.getDevice());
 
         }
 
