@@ -66,7 +66,18 @@ namespace undicht {
 
         /// @brief to be called when the swap chain got recreated
         /// so that the next frame doesnt try to wait on the previous one
+        /// also resets all draw command buffers, so they will need to be re-recorded
         void reset();
+
+        /// @brief resets the command buffers of all frames
+        void resetCommandBuffers(bool draw = true, bool transfer = true);
+
+        /// @brief functions to replace the command buffers for the current frame
+        /// (for example to record them on a different thread maybe?)
+        /// use different command buffers for the two frames
+        /// the cleanup function is called for them when the framemanager cleanup function is called
+        void replaceTransferCmd(const vulkan::CommandBuffer& cmd);
+        void replaceDrawCmd(const vulkan::CommandBuffer& cmd);
 
         /// @return the transfer command buffer for the frame currently in preparation
         vulkan::CommandBuffer& getTransferCmd();

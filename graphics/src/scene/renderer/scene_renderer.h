@@ -43,6 +43,8 @@ namespace undicht {
 
             vulkan::DescriptorSetLayout _global_descriptor_layout;
             vulkan::DescriptorSetCache _global_descriptor_cache;
+            vulkan::DescriptorSetLayout _node_descriptor_layout;
+            vulkan::DescriptorSetCache _node_descriptor_cache;
             vulkan::DescriptorSetLayout _material_descriptor_layout;
             vulkan::DescriptorSetCache _material_descriptor_cache;
             vulkan::Sampler _material_sampler;
@@ -69,6 +71,7 @@ namespace undicht {
             uint32_t draw(vulkan::CommandBuffer& cmd, Scene& scene);
             uint32_t draw(vulkan::CommandBuffer& cmd, Scene& scene, Node& node);
 
+            vulkan::DescriptorSetCache& getNodeDescriptorCache();
             vulkan::DescriptorSetCache& getMaterialDescriptorCache();
             vulkan::Sampler& getMaterialSampler();
 
@@ -79,8 +82,8 @@ namespace undicht {
             void initDepthImages(vma::VulkanMemoryAllocator& allocator, uint32_t image_count, const VkExtent2D& extent);
             void initFramebuffers(std::vector<vulkan::ImageView> swap_images, const VkExtent2D& extent);
             void initUniformBuffer(vma::VulkanMemoryAllocator& allocator);
-            void initDescriptorLayout();
-            void initDescriptorCache();
+            void initDescriptorLayouts();
+            void initDescriptorCaches();
             void initSampler();
 
             void cleanUpFramebuffers();

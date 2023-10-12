@@ -6,7 +6,6 @@
 
 #include "cassert"
 
-
 namespace undicht {
 
 	namespace tools {
@@ -14,7 +13,7 @@ namespace undicht {
         using namespace graphics;
         using namespace vulkan;
 
-        void SceneLoader::importScene(const std::string& file_name, Scene& load_to, TransferBuffer& transfer_buffer, vulkan::DescriptorSetCache& material_descriptor_cache, vulkan::Sampler& sampler) {
+        void SceneLoader::importScene(const std::string& file_name, Scene& load_to, TransferBuffer& transfer_buffer, vulkan::DescriptorSetCache& material_descriptor_cache, vulkan::DescriptorSetCache& node_descriptor_cache, const vulkan::Sampler& sampler, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator) {
             // following the tutorial: https://learnopengl.com/Model-Loading/Model
 
             // getting the working directory from the file_name
@@ -28,7 +27,7 @@ namespace undicht {
             if(assimp_scene == nullptr) return;
 
             // loading the data from the assimp scene into the load_to scene
-            processAssimpScene(assimp_scene, load_to, directory, transfer_buffer, material_descriptor_cache, sampler);
+            processAssimpScene(assimp_scene, load_to, directory, transfer_buffer, material_descriptor_cache, node_descriptor_cache, sampler, device, allocator);
 
         }
 
@@ -47,7 +46,7 @@ namespace undicht {
             return scene;
         }
 
-        void SceneLoader::processAssimpScene(const aiScene* assimp_scene, Scene& load_to, const std::string& directory, TransferBuffer& transfer_buffer, vulkan::DescriptorSetCache& material_descriptor_cache, vulkan::Sampler& sampler) {
+        void SceneLoader::processAssimpScene(const aiScene* assimp_scene, Scene& load_to, const std::string& directory, TransferBuffer& transfer_buffer, vulkan::DescriptorSetCache& material_descriptor_cache, vulkan::DescriptorSetCache& node_descriptor_cache, const vulkan::Sampler& sampler, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator) {
 
             // process all meshes
             for(int i = 0; i < assimp_scene->mNumMeshes; i++) {
@@ -62,7 +61,7 @@ namespace undicht {
             }
 
             // process all nodes (recursive)
-            processAssimpNode(assimp_scene->mRootNode, load_to.getRootNode());
+            processAssimpNode(assimp_scene->mRootNode, load_to.getRootNode(), device, allocator, node_descriptor_cache, transfer_buffer);
 
         }
 
@@ -132,7 +131,7 @@ namespace undicht {
 
 		/////////////////////////////////////// functions to process Materials ///////////////////////////////////////
 
-        void SceneLoader::processAssimpMaterial(const aiMaterial* assimp_material, Material& load_to, const std::string& directory, TransferBuffer& transfer_buffer, vulkan::Sampler& sampler) {
+        void SceneLoader::processAssimpMaterial(const aiMaterial* assimp_material, Material& load_to, const std::string& directory, TransferBuffer& transfer_buffer, const vulkan::Sampler& sampler) {
 
             // string to store the textures file name
             aiString file_name;
@@ -161,17 +160,20 @@ namespace undicht {
 
         //////////////////////////////////////////// functions to process nodes ////////////////////////////////////////////
 
-		void SceneLoader::processAssimpNode(const aiNode* assimp_node, Node& load_to) {
+		void SceneLoader::processAssimpNode(const aiNode* assimp_node, Node& load_to, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& node_descriptor_cache, vulkan::TransferBuffer& transfer_buffer) {
             
             // store the nodes meshes
             std::vector<uint32_t> meshes;
             meshes.insert(meshes.end(), assimp_node->mMeshes, assimp_node->mMeshes + assimp_node->mNumMeshes);
             load_to.setMeshes(meshes);
 
+            // store the model matrix
+            load_to.setModelMatrix((uint8_t*)&assimp_node->mTransformation, transfer_buffer);
+
             // recursivly processing the child nodes
             for(unsigned int i = 0; i < assimp_node->mNumChildren; i++) {
 
-                processAssimpNode(assimp_node->mChildren[i], load_to.addChildNode());
+                processAssimpNode(assimp_node->mChildren[i], load_to.addChildNode(device, allocator, node_descriptor_cache), device, allocator, node_descriptor_cache, transfer_buffer);
             }
 
         }

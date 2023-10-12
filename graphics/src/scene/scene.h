@@ -3,6 +3,7 @@
 
 #include "vulkan_memory_allocator.h"
 #include "core/vulkan/logical_device.h"
+#include "renderer/vulkan/descriptor_set_cache.h"
 
 #include "mesh.h"
 #include "texture.h"
@@ -32,7 +33,7 @@ namespace undicht {
 
 		  public:
 
-			void init(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator);
+			void init(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& node_descriptor_cache);
 			void cleanUp();
 			
 			Mesh& addMesh();
@@ -45,6 +46,7 @@ namespace undicht {
 			Node& getRootNode();
 			Mesh& getMesh(uint32_t mesh_id);
 			Material& getMaterial(uint32_t material_id);
+			uint32_t getMaterialCount() const;
 
 		};
 

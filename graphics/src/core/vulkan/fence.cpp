@@ -48,6 +48,8 @@ namespace undicht {
             if(reset_when_finished)
                 vkResetFences(_device_handle, 1, &_fence);
 
+            _in_use = false;
+
         }
 
         ///////////////////////////// creating fence related structs /////////////////////////////

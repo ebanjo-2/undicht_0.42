@@ -1,4 +1,5 @@
 #include "command_buffer.h"
+#include "debug.h"
 
 namespace undicht {
 
@@ -30,6 +31,7 @@ namespace undicht {
         void CommandBuffer::resetCommandBuffer() {
 
             vkResetCommandBuffer(_cmd_buffer, 0);
+            _is_ready = false;
         }
 
         void CommandBuffer::beginCommandBuffer(bool single_use) {
@@ -41,8 +43,18 @@ namespace undicht {
 
         void CommandBuffer::endCommandBuffer() {
 
-            vkEndCommandBuffer(_cmd_buffer);
+            if(vkEndCommandBuffer(_cmd_buffer) == VK_SUCCESS) {
+                _is_ready = true;
+            } else {
+                UND_ERROR << "failed to record command buffer\n";
+                _is_ready = false;
+            }
 
+        }
+    
+        bool CommandBuffer::isReady() const {
+
+            return _is_ready;
         }
 
         void CommandBuffer::beginRenderPass(const VkRenderPass& render_pass, const VkFramebuffer& frame_buffer, VkExtent2D extent, const std::vector<VkClearValue>& clear_values) {

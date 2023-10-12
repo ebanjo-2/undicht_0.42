@@ -40,15 +40,12 @@ namespace undicht {
     uint32_t FrameManager::prepareNextFrame(vulkan::SwapChain& swap_chain) {
         /// should be called before starting to record any command buffers for the next frame
         /// acquires a new image to render to from the swap chain
-        /// beginCommandBuffer() still has to be called on the transfer and draw commands
+        /// resetCommandBuffer() and beginCommandBuffer() still has to be called on the transfer and draw commands
         /// @return the id of the acquired swap image
 
         _frame_id = (_frame_id + 1) % 2;
 
         _swap_images[_frame_id] = swap_chain.acquireNextSwapImage(_swap_images_ready[_frame_id].getAsSignal());
-
-        _transfer_cmds[_frame_id].resetCommandBuffer();
-        _draw_cmds[_frame_id].resetCommandBuffer();
 
         return _swap_images[_frame_id];
     }
@@ -69,10 +66,8 @@ namespace undicht {
         // no previous frame
         if(!_render_finished_fence.isInUse()) return;
 
-        PROFILE_SCOPE("waiting for previous render finished",
-            // if this takes a significant amount of time, the cpu was faster than the gpu
-            _render_finished_fence.waitForProcessToFinish();
-        )
+        // if this takes a significant amount of time, the cpu was faster than the gpu
+        _render_finished_fence.waitForProcessToFinish();
 
     }
 
@@ -104,8 +99,43 @@ namespace undicht {
     void FrameManager::reset() {
         /// @brief to be called when the swap chain got recreated
         /// so that the next frame doesnt try to wait on the previous one
+        /// also resets all draw command buffers, so they will need to be re-recorded
 
         _render_finished_fence.reset();
+        resetCommandBuffers(true, false); // reset the draw commands
+
+    }
+
+    void FrameManager::resetCommandBuffers(bool draw, bool transfer) {
+        /// @brief resets the command buffers of all frames
+
+        if(draw) {
+            _draw_cmds[0].resetCommandBuffer();
+            _draw_cmds[1].resetCommandBuffer();
+        }
+
+        if(transfer) {
+            _transfer_cmds[0].resetCommandBuffer();
+            _transfer_cmds[1].resetCommandBuffer();
+        }
+    }
+
+
+    void FrameManager::replaceTransferCmd(const vulkan::CommandBuffer& cmd) {
+        /// @brief functions to replace the command buffers for the current frame
+        /// (for example to record them on a different thread maybe?)
+        /// use different command buffers for the two frames
+        /// the cleanup function is called for them when the framemanager cleanup function is called
+
+        _transfer_cmds[_frame_id].cleanUp();
+        _transfer_cmds[_frame_id] = cmd;
+
+    }
+
+    void FrameManager::replaceDrawCmd(const vulkan::CommandBuffer& cmd) {
+
+        _draw_cmds[_frame_id].cleanUp();
+        _draw_cmds[_frame_id] = cmd;
 
     }
 

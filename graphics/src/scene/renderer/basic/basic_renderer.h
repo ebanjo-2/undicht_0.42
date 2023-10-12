@@ -30,7 +30,7 @@ namespace undicht {
 
           public:
 
-            void init(VkDevice device, VkRenderPass render_pass, VkDescriptorSetLayout global_descriptor_layout, VkDescriptorSetLayout material_descriptor_layout, VkExtent2D view_port);
+            void init(VkDevice device, VkRenderPass render_pass, VkDescriptorSetLayout global_descriptor_layout, VkDescriptorSetLayout material_descriptor_layout, VkDescriptorSetLayout node_descriptor_layout, VkExtent2D view_port);
             void cleanUp();
 
             void setViewPort(VkExtent2D view_port);
@@ -46,7 +46,7 @@ namespace undicht {
             // functions to initialize parts of the renderer
 
             void initShaderModules();
-            void initPipeLine(VkExtent2D view_port, VkDescriptorSetLayout global_descriptor_layout, VkDescriptorSetLayout& material_descriptor_layout, VkRenderPass render_pass);
+            void initPipeLine(VkExtent2D view_port, VkDescriptorSetLayout global_descriptor_layout, VkDescriptorSetLayout material_descriptor_layout, VkDescriptorSetLayout& node_descriptor_layout, VkRenderPass render_pass);
 
         };
 

@@ -7,10 +7,12 @@ namespace undicht {
         using namespace vulkan;
         using namespace vma;
 
-        void Scene::init(const LogicalDevice& device, VulkanMemoryAllocator& allocator) {
+        void Scene::init(const LogicalDevice& device, VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& node_descriptor_cache) {
 
             _device_handle = device;
             _allocator_handle = allocator;
+
+            _root_node.init(device, allocator, node_descriptor_cache);
 
         }
 
@@ -18,6 +20,8 @@ namespace undicht {
 
             for(Mesh& m : _meshes) m.cleanUp();
             for(Material& m : _materials) m.cleanUp();
+
+            _root_node.cleanUp();
 
         }
 
@@ -58,6 +62,11 @@ namespace undicht {
         Material& Scene::getMaterial(uint32_t material_id) {
 
             return _materials.at(material_id);
+        }
+
+		uint32_t Scene::getMaterialCount() const {
+            
+            return _materials.size();
         }
 
     } // graphics

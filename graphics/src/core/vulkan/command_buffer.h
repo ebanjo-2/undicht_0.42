@@ -16,6 +16,8 @@ namespace undicht {
 
             VkCommandBuffer _cmd_buffer;
 
+            bool _is_ready = false;
+
         public:
 
             void init(const VkDevice& device, const VkCommandPool& command_pool);
@@ -27,6 +29,7 @@ namespace undicht {
             void resetCommandBuffer();
             void beginCommandBuffer(bool single_use);
             void endCommandBuffer();
+            bool isReady() const;
 
             // graphics commands
             void beginRenderPass(const VkRenderPass& render_pass, const VkFramebuffer& frame_buffer, VkExtent2D extent, const std::vector<VkClearValue>& clear_values);

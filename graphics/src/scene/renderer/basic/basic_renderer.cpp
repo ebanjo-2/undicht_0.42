@@ -2,6 +2,7 @@
 #include "file_tools.h"
 #include "core/vulkan/formats.h"
 #include "profiler.h"
+#include "debug.h"
 
 namespace undicht {
 
@@ -9,13 +10,13 @@ namespace undicht {
 
         using namespace vulkan;
 
-        void BasicRenderer::init(VkDevice device, VkRenderPass render_pass, VkDescriptorSetLayout global_descriptor_layout, VkDescriptorSetLayout material_descriptor_layout, VkExtent2D view_port) {
+        void BasicRenderer::init(VkDevice device, VkRenderPass render_pass, VkDescriptorSetLayout global_descriptor_layout, VkDescriptorSetLayout material_descriptor_layout, VkDescriptorSetLayout node_descriptor_layout, VkExtent2D view_port) {
 
             _device_handle = device;
             _render_pass_handle = render_pass;
 
             initShaderModules();
-            initPipeLine(view_port, global_descriptor_layout, material_descriptor_layout, render_pass);
+            initPipeLine(view_port, global_descriptor_layout, material_descriptor_layout, node_descriptor_layout, render_pass);
 
         }
 
@@ -68,12 +69,12 @@ namespace undicht {
 
                 // bind the mesh resources
                 cmd.bindDescriptorSet(mat.getDescriptorSet().getDescriptorSet(), _pipeline.getPipelineLayout(), 1);
+                cmd.bindDescriptorSet(node.getDescriptorSet().getDescriptorSet(), _pipeline.getPipelineLayout(), 2);
                 cmd.bindVertexBuffer(mesh->getVertexBuffer().getBuffer(), 0);
                 cmd.bindIndexBuffer(mesh->getIndexBuffer().getBuffer());
 
                 // draw using the index buffer
                 cmd.draw(mesh->getVertexCount(), true);
-                                cmd.draw(mesh->getVertexCount(), true);
 
                 draw_calls++;
             }
@@ -92,12 +93,13 @@ namespace undicht {
 
         }
 
-        void BasicRenderer::initPipeLine(VkExtent2D view_port, VkDescriptorSetLayout global_descriptor_layout, VkDescriptorSetLayout& material_descriptor_layout, VkRenderPass render_pass) {
+        void BasicRenderer::initPipeLine(VkExtent2D view_port, VkDescriptorSetLayout global_descriptor_layout, VkDescriptorSetLayout material_descriptor_layout, VkDescriptorSetLayout& node_descriptor_layout, VkRenderPass render_pass) {
 
             _pipeline.addShaderModule(_vertex_shader);
             _pipeline.addShaderModule(_fragment_shader);
             _pipeline.setShaderInput(global_descriptor_layout, 0);
             _pipeline.setShaderInput(material_descriptor_layout, 1);
+            _pipeline.setShaderInput(node_descriptor_layout, 2);
             _pipeline.setBlending(0, false);
             _pipeline.setDepthStencilState(true);
             _pipeline.setInputAssembly(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);

@@ -19,11 +19,11 @@ namespace undicht {
             initDepthImages(allocator, swap_chain.getSwapImageCount(), swap_chain.getExtent());
             initFramebuffers(_swap_images, swap_chain.getExtent());
             initUniformBuffer(allocator);
-            initDescriptorLayout();
-            initDescriptorCache();
+            initDescriptorLayouts();
+            initDescriptorCaches();
             initSampler();
 
-            _basic_renderer.init(device.getDevice(), _render_pass.getRenderPass(), _global_descriptor_layout.getLayout(), _material_descriptor_layout.getLayout(), swap_chain.getExtent());
+            _basic_renderer.init(device.getDevice(), _render_pass.getRenderPass(), _global_descriptor_layout.getLayout(), _material_descriptor_layout.getLayout(), _node_descriptor_layout.getLayout(), swap_chain.getExtent());
 
             _global_descriptor_set.bindUniformBuffer(0, _uniform_buffer);
             _global_descriptor_set.update();
@@ -42,8 +42,10 @@ namespace undicht {
             _material_sampler.cleanUp();
             _global_descriptor_layout.cleanUp();
             _global_descriptor_cache.cleanUp();
-            _material_descriptor_layout.cleanUp();
             _material_descriptor_cache.cleanUp();
+            _material_descriptor_layout.cleanUp();
+            _node_descriptor_layout.cleanUp();
+            _node_descriptor_cache.cleanUp();
             _render_pass.cleanUp();
 
         }
@@ -121,6 +123,11 @@ namespace undicht {
             return _material_descriptor_cache;
         }
 
+        vulkan::DescriptorSetCache& SceneRenderer::getNodeDescriptorCache() {
+
+            return _node_descriptor_cache;
+        }
+
         vulkan::Sampler& SceneRenderer::getMaterialSampler() {
 
             return _material_sampler;
@@ -163,7 +170,7 @@ namespace undicht {
 
         }
 
-        void SceneRenderer::initDescriptorLayout() {
+        void SceneRenderer::initDescriptorLayouts() {
 
             std::vector<VkDescriptorType> global_descriptors = {
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -173,24 +180,31 @@ namespace undicht {
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
             };
 
+            std::vector<VkDescriptorType> node_descriptors = {
+                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            };
+
             std::vector<VkShaderStageFlagBits> shader_stages = {
                 VK_SHADER_STAGE_ALL_GRAPHICS,
             };
 
             _global_descriptor_layout.init(_device_handle.getDevice(), global_descriptors, shader_stages);
+            _node_descriptor_layout.init(_device_handle.getDevice(), node_descriptors, shader_stages);
             _material_descriptor_layout.init(_device_handle.getDevice(), material_descriptors, shader_stages);
 
         }
 
-        void SceneRenderer::initDescriptorCache() {
+        void SceneRenderer::initDescriptorCaches() {
 
             // descriptor to bind the global uniform buffer
             _global_descriptor_cache.init(_device_handle.getDevice(), _global_descriptor_layout, 1);
             _global_descriptor_set = _global_descriptor_cache.allocate();
 
-            // there will be a descriptor set allocted for every material, 5000 may or may not be enough
-            _material_descriptor_cache.init(_device_handle.getDevice(), _material_descriptor_layout, 5000);
+            // there will be a descriptor set allocted for every material, 500 may or may not be enough
+            _material_descriptor_cache.init(_device_handle.getDevice(), _material_descriptor_layout, 500);
 
+            // there will be a descriptor set allocted for every node, 5000 may or may not be enough
+            _node_descriptor_cache.init(_device_handle.getDevice(), _node_descriptor_layout, 5000);
         }
 
         void SceneRenderer::initUniformBuffer(vma::VulkanMemoryAllocator& allocator) {
