@@ -66,7 +66,6 @@ namespace undicht {
 
         /// @brief to be called when the swap chain got recreated
         /// so that the next frame doesnt try to wait on the previous one
-        /// also resets all draw command buffers, so they will need to be re-recorded
         void reset();
 
         /// @brief resets the command buffers of all frames

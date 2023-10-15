@@ -61,43 +61,77 @@ namespace undicht {
 
             resolveCollisions(delta_time);
 
-            for(int i = 0; i < _spheres.size(); i++) {
-
-                if(_sphere_is_removed.at(i)) continue;
-
-                _spheres.at(i).update(delta_time);
-                
-            }
-
         }
 
         /////////////////////////////////// private physics sim functions ///////////////////////////////////
 
         void PhysicsSimulation::resolveCollisions(float delta_time) {
+            /// moves all objects for the specified time while checking for and resolving any collisions
+            
+            // the time at which each sphere currently sits at
+            std::vector<float> sphere_times(_spheres.size(), 0.0f);
 
-            // get all collisions
+            // calculate the collisions that will occur if the spheres move for the specified time
             std::vector<Collision<SphereObject, SphereObject>> collisions = calcCollisions(_spheres, delta_time);
             
-            // resolve collisions
-            for(const Collision<SphereObject, SphereObject>& collision : collisions) {
+            // move every sphere
+            for(int i = 0; i < _spheres.size(); i++) {
 
-                if(collision._will_collide) {
+                if(_sphere_is_removed.at(i)) continue;
 
-                    SphereObject* s0 = collision._object0;
-                    SphereObject* s1 = collision._object1;
+                const Collision<SphereObject, SphereObject>* next_collision = getNextCollision(&_spheres.at(i), collisions);
 
-                    //s0->setPosition(collision.getPosition());
-                    s0->setPosition(collision._obj0_pos);
-                    s0->setVelocity(-0.7f * s0->getVelocity());
-                    //s0->setVelocity(vec3f(0.0f));
+                if(next_collision) {
+                    // resolve collision
 
-                    s1->setPosition(collision._obj1_pos);
-                    s1->setVelocity(-0.7f * s1->getVelocity());
+                    if(next_collision->_object0 == &_spheres.at(i)) {
+
+                        _spheres.at(i).setPosition(next_collision->_obj0_pos);
+                        _spheres.at(i).setVelocity(-0.6f * _spheres.at(i).getVelocity());
+
+                    } else {
+
+                        _spheres.at(i).setPosition(next_collision->_obj1_pos);
+                        _spheres.at(i).setVelocity(-0.6f * _spheres.at(i).getVelocity());
+                    }
+
+                    //_spheres.at(i).update(next_collision->_time);
+
+                } else {
+                    // move without collision
+
+                    _spheres.at(i).update(delta_time);
+                }
+                
+            }
+
+        }
+
+
+        const Collision<SphereObject, SphereObject>* PhysicsSimulation::getNextCollision(SphereObject* sphere, const std::vector<Collision<SphereObject, SphereObject>>& collisions) {
+            /// @brief find the next collision involving the sphere
+            /// @return nullptr, if none of the collisions involves the sphere
+
+            const Collision<SphereObject, SphereObject>* next_collision = nullptr;
+
+            for(const Collision<SphereObject, SphereObject>& col : collisions) {
+
+                if(!col._will_collide) continue;
+
+                if((col._object0 == sphere) ||  (col._object1 == sphere)) {
+                    // found a collision involving the sphere
+                    
+                    if((!next_collision) || (next_collision->_time > col._time)) {
+                        // it is the next collision involving the object
+
+                        next_collision = &col;
+                    }
 
                 }
 
             }
 
+            return next_collision;
         }
 
     } // physics

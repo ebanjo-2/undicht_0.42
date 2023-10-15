@@ -39,7 +39,12 @@ namespace undicht {
           protected:
             // private physics sim functions
 
+            /// moves all objects for the specified time while checking for and resolving any collisions 
             void resolveCollisions(float delta_time);
+
+            /// @brief find the next collision involving the sphere
+            /// @return nullptr, if none of the collisions involves the sphere
+            const Collision<SphereObject, SphereObject>* getNextCollision(SphereObject* sphere, const std::vector<Collision<SphereObject, SphereObject>>& collisions);
 
         };
 

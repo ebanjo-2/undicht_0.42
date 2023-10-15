@@ -3,14 +3,16 @@ add_subdirectory(extern/stb)
 
 #assimp
 set(ZLIB_LIBRARIES zlibstatic)
-set(ENABLE_BOOST_WORKAROUND ON)
-set(BUILD_STATIC_LIB ON)
-set(BUILD_ASSIMP_TOOLS  ON)
-set(ASSIMP_BUILD_STATIC_LIB ON)
+set(ENABLE_BOOST_WORKAROUND ON CACHE BOOL "" FORCE)
+set(BUILD_STATIC_LIB ON CACHE BOOL "" FORCE)
+set(BUILD_ASSIMP_TOOLS  ON CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_STATIC_LIB ON CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
 add_subdirectory(extern/assimp)
 
 add_library("tools" 
-
 
 	src/math/math_tools.h
 	src/math/math_tools.cpp

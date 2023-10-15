@@ -34,6 +34,27 @@ namespace undicht {
             return collisions;
         }
 
+        std::vector<Collision<SphereObject, SphereObject>> calcCollisions(const SphereObject& sphere, const std::vector<SphereObject>& objects, float delta_time) {
+            /// @brief only calculating the possible collisions for the sphere
+
+            std::vector<Collision<SphereObject, SphereObject>> collisions;
+
+            for(int other_sphere = 0; other_sphere < objects.size(); other_sphere++) {
+                
+                const SphereObject& other = objects.at(other_sphere);
+                
+                // checking if there may be a chance
+                if(!sphere.couldCollide(other, delta_time, 1))
+                    continue;
+
+                // calculating at what time they collide (if they collide)
+                collisions.push_back(sphere.willCollide(other, delta_time));
+
+            }
+
+            return collisions;
+        }
+
     } // physics
 
 } // undicht

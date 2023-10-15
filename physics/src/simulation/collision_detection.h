@@ -15,6 +15,9 @@ namespace undicht {
 
         std::vector<Collision<SphereObject, SphereObject>> calcCollisions(const std::vector<SphereObject>& objects, float delta_time);
 
+        /// @brief only calculating the possible collisions for the sphere
+        std::vector<Collision<SphereObject, SphereObject>> calcCollisions(const SphereObject& sphere, const std::vector<SphereObject>& objects, float delta_time);
+
     } // physics
 
 } // undicht

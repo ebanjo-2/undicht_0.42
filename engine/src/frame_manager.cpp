@@ -120,7 +120,6 @@ namespace undicht {
         }
     }
 
-
     void FrameManager::replaceTransferCmd(const vulkan::CommandBuffer& cmd) {
         /// @brief functions to replace the command buffers for the current frame
         /// (for example to record them on a different thread maybe?)

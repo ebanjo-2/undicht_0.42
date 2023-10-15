@@ -26,8 +26,8 @@ namespace undicht {
         if(!s_globally_enabled) return;
 
         _task_id = s_tasks.size();
-        Task& task = s_tasks.emplace_back(Task());
-
+        s_tasks.emplace_back(Task());
+        Task& task = s_tasks.back();
         task._name = task_name;
         task._start_time = micros();
 
