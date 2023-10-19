@@ -17,12 +17,12 @@ using namespace physics;
 
 void setupPhysicsScene(PhysicsScene& scene) {
 
-    scene.addSphere(vec3i(00000, 30000, 0), 1000, 1.0f);
-    scene.addSphere(vec3i(0, -30000, 0), 10000, 1.0f);
+    scene.addSphere(vec3i(30000, 30000, 0), 1000, 1.0f);
+    scene.addSphere(vec3i(0, -10000, 0), 10000, 1.0f);
     scene.addSphere(vec3i(-20000, 0, 0), 5000, 1.0f);
     scene.addSphere(vec3i(0, -2000000000 - 40000, 0), 2000000000, 1.0f);
 
-    scene.getSphere(0).setVelocity(vec3f(0, -20, 0));
+    //scene.getSphere(0).setVelocity(vec3f(0, -20, 0));
     //scene.getSphere(1).setVelocity(vec3f(0, 2, 0));
 }
 
@@ -60,6 +60,8 @@ int main() {
 
         // physics!
         scene.getSphere(0).addVelocity(vec3f(0.0f, -9.81f, 0.0f) * delta_time);
+        scene.getSphere(1).addVelocity(vec3f(0.0f, -9.81f, 0.0f) * delta_time);
+        scene.getSphere(2).addVelocity(vec3f(0.0f, -9.81f, 0.0f) * delta_time);
 
 
         scene.advanceSimulation(delta_time);

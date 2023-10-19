@@ -59,15 +59,15 @@ namespace undicht {
             float min_dist_squared = min_dist * min_dist;
 
             float vel_len_sqared = delta_v_x_squared + delta_v_y_squared + delta_v_z_squared;
-            if(vel_len_sqared < 0.0000001) return collision_info; // dont divide by zero
+            if(vel_len_sqared < 0.0000001f) return collision_info; // dont divide by zero
 
-            // p-q formula
+            // p-q formula to solve for the two times where the spheres are at a distance equal to the sum of their radii
             float p = (delta_x * delta_v_x + delta_y * delta_v_y + delta_z * delta_v_z) / vel_len_sqared; // half of real p
             float q = (delta_x_squared + delta_y_squared + delta_z_squared - min_dist_squared) / vel_len_sqared;
 
             float tmp0 = p * p - q; // (p / 2.0) * (p / 2.0) - q
 
-            if(tmp0 <= 0.0) return collision_info; // no real solution (literally)
+            if(tmp0 <= 0.0f) return collision_info; // no real solution (literally)
                 
             // these two times should describe the interval in which the two spheres overlap
             float tmp1 = glm::sqrt(tmp0);
