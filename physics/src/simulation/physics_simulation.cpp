@@ -6,132 +6,103 @@ namespace undicht {
 
     namespace physics {
 
-        //////////////////////////////////// managing physics objects ////////////////////////////////////
-
-        uint32_t PhysicsSimulation::addSphereObject(const SphereObject& object) {
-
-            _spheres.push_back(object);
-            _sphere_is_removed.push_back(false);
-            
-            return _spheres.size() - 1;
-        }
-
-        SphereObject& PhysicsSimulation::getSphereObject(uint32_t id) {
-
-            return _spheres.at(id);
-        }
-
-        void PhysicsSimulation::removeSphereObject(uint32_t id) {
-
-            _sphere_is_removed.at(id) = true;
-        }
-
-        const std::vector<SphereObject>& PhysicsSimulation::getSphereObjects() const {
-
-            return _spheres;
-        }
-
-        void PhysicsSimulation::clearAllObjects() {
-            
-            _spheres.clear();
-            _sphere_is_removed.clear();
-
-        }
-
         //////////////////////////////////// running the simulation ////////////////////////////////////
 
-        void PhysicsSimulation::applyUniversalAcceleration(const vec3f& a, float delta_time) {
+        void PhysicsSimulation::addUniversalAcceleration(const vec3f& a) {
             /** applies the acceleration to all objects of the simulation 
              * (mainly to add gravity)
              * default gravity would be a = 9.81 */
 
-            for(int i = 0; i < _spheres.size(); i++) {
-
-                if(_sphere_is_removed.at(i)) continue;
-
-                _spheres.at(i).addVelocity(a * delta_time);
-
-            }
+            UniversalAcceleration acc{};
+            acc._a = a;
+            _universal_accelerations.push_back(acc);
 
         }
 
-        void PhysicsSimulation::update(float delta_time) {
+        void PhysicsSimulation::addObjectAcceleration(Object* object, const vec3f& a) {
+
+            ObjectAcceleration acc{};
+            acc._object = object;
+            acc._a = a;
+            _object_acceleration.push_back(acc);
+
+        }
+
+        void PhysicsSimulation::update(float delta_time, std::vector<SphereObject>& spheres) {
             /** advances the simulation by the specified time
              * @param delta_time unit: seconds */
 
-            resolveCollisions(delta_time);
+            // apply accelerations (is a little inaccurate if the object collides within delta_time, but should be alright)
+            for(UniversalAcceleration& a : _universal_accelerations)
+                for(SphereObject& s : spheres)
+                    s.addVelocity(a._a * delta_time);
+
+            for(ObjectAcceleration& a : _object_acceleration)
+                a._object->addVelocity(a._a * delta_time);
+
+            // resolve collisions
+            std::vector<float> sphere_times(spheres.size(), 0.0f);
+            resolveCollisions(delta_time, spheres, sphere_times);
+
+            // move every sphere
+            for(int i = 0; i < spheres.size(); i++) {
+                
+                spheres.at(i).update(delta_time - sphere_times.at(i));
+            }
+            
+            _universal_accelerations.clear();
+            _object_acceleration.clear();
 
         }
 
         /////////////////////////////////// private physics sim functions ///////////////////////////////////
 
-        void PhysicsSimulation::resolveCollisions(float delta_time) {
+        void PhysicsSimulation::resolveCollisions(float delta_time, std::vector<SphereObject>& spheres, std::vector<float>& sphere_times) {
             /// moves all objects for the specified time while checking for and resolving any collisions
-            
-            // the time at which each sphere currently sits at
-            std::vector<float> sphere_times(_spheres.size(), 0.0f);
-
-            // calculate the collisions that will occur if the spheres move for the specified time
-            std::vector<Collision<SphereObject, SphereObject>> collisions = calcCollisions(_spheres, delta_time);
-            
-            // move every sphere
-            for(int i = 0; i < _spheres.size(); i++) {
-
-                if(_sphere_is_removed.at(i)) continue;
-
-                const Collision<SphereObject, SphereObject>* next_collision = getNextCollision(&_spheres.at(i), collisions);
-
-                if(next_collision) {
-                    // resolve collision
-
-                    if(next_collision->_object0 == &_spheres.at(i)) {
-
-                        _spheres.at(i).setPosition(next_collision->_obj0_pos);
-                        _spheres.at(i).setVelocity(-0.6f * _spheres.at(i).getVelocity());
-
-                    } else {
-
-                        _spheres.at(i).setPosition(next_collision->_obj1_pos);
-                        _spheres.at(i).setVelocity(-0.6f * _spheres.at(i).getVelocity());
-                    }
-
-                    //_spheres.at(i).update(next_collision->_time);
-
-                } else {
-                    // move without collision
-
-                    _spheres.at(i).update(delta_time);
-                }
-                
-            }
-
-        }
+            /// @param sphere_times in order to resolve the collisions, the objects will be moved until they touch the last object they collide with
+            /// the time, at which this happens, is stored in sphere_times for each sphere
 
 
-        const Collision<SphereObject, SphereObject>* PhysicsSimulation::getNextCollision(SphereObject* sphere, const std::vector<Collision<SphereObject, SphereObject>>& collisions) {
-            /// @brief find the next collision involving the sphere
-            /// @return nullptr, if none of the collisions involves the sphere
+            // the collisions that need to be resolved
+            std::vector<Collision<SphereObject, SphereObject>> collisions = calcCollisions(spheres, sphere_times, delta_time);
+            removeUnreachableCollisions(collisions);
 
-            const Collision<SphereObject, SphereObject>* next_collision = nullptr;
+            int num_collisions = 0;
 
-            for(const Collision<SphereObject, SphereObject>& col : collisions) {
+            // resolve all collisions
+            while(collisions.size()) {
 
-                if(!col._will_collide) continue;
+                num_collisions += collisions.size();
 
-                if((col._object0 == sphere) ||  (col._object1 == sphere)) {
-                    // found a collision involving the sphere
-                    
-                    if((!next_collision) || (next_collision->_time > col._time)) {
-                        // it is the next collision involving the object
+                // resolve the current collisions
+                for(Collision<SphereObject, SphereObject>& c : collisions) {
 
-                        next_collision = &col;
-                    }
+                    c._object0->setPosition(c._obj0_pos);
+                    c._object1->setPosition(c._obj1_pos);
+
+                    if(glm::length(c._object0->getVelocity()) > 0.01f)
+                        c._object0->setVelocity(-0.02f * c._object0->getVelocity());
+                    else
+                        c._object0->setVelocity(vec3f(0.0f));
+
+                    if(glm::length(c._object1->getVelocity()) > 0.01f)
+                        c._object1->setVelocity(-0.02f * c._object1->getVelocity());
+                    else
+                        c._object1->setVelocity(vec3f(0.0f));
+
+                    // slighty cursed way to get the sphere id from the pointers stored in the collision
+                    sphere_times.at((c._object0 - &spheres.front()) / sizeof(SphereObject*)) = c._time;
+                    sphere_times.at((c._object1 - &spheres.front()) / sizeof(SphereObject*)) = c._time;
 
                 }
 
+                // find collisions that may occur within delta_time after the previous collisions
+                collisions = calcCollisions(spheres, sphere_times, delta_time);
+                removeUnreachableCollisions(collisions);
             }
 
-            return next_collision;
+            // UND_LOG << "resolving " << num_collisions << " collisions \n";
+
         }
 
     } // physics

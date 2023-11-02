@@ -12,12 +12,21 @@ namespace undicht {
 
 		/////////////////////////////////////// collision detection ///////////////////////////////////////
 
-        bool SphereObject::couldCollide(const SphereObject& other, float delta_time, int32_t resolution) const {
+        bool SphereObject::couldCollide(const SphereObject& other, float delta_time, float sphere0_time, float sphere1_time, int32_t resolution) const {
             /// @brief constructs spheres around the paths that the two spheres are going to take
             /// @param resolution determines the amount of spheres that are going to be used
 
-            vec3f pos0 = (vec3f(getPosition()) / 10000.0f);
-            vec3f pos1 = (vec3f(other.getPosition()) / 10000.0f);
+            vec3f rel_pos = (vec3f(other.getPosition() - getPosition()) / 10000.0f);
+
+            // moving the spheres to the same time
+            if(sphere0_time > sphere1_time) {
+                rel_pos += other.getVelocity() * (sphere0_time - sphere1_time);
+                delta_time -= sphere0_time;
+            } else {
+                rel_pos -= getVelocity() * (sphere1_time - sphere0_time);
+                delta_time -= sphere1_time;
+            }
+
             float rad0 = (getRadius() / 10000.0f) + glm::length(getVelocity()) * delta_time / 2.0f / resolution;
             float rad1 = (other.getRadius() / 10000.0f) + glm::length(other.getVelocity()) * delta_time / 2.0f / resolution;
             vec3f inc0 = getVelocity() * delta_time / float(resolution + 1);
@@ -25,7 +34,7 @@ namespace undicht {
 
             for(int i = 0; i < resolution; i++) {
 
-                if(overlap(pos0 + inc0 * float(i + 1), rad0, pos1 + inc1 * float(i + 1), rad1))
+                if(overlap(inc0 * float(i + 1), rad0, rel_pos + inc1 * float(i + 1), rad1))
                     return true;
 
             }
@@ -33,7 +42,7 @@ namespace undicht {
             return false;
         }
 
-		Collision<SphereObject, SphereObject> SphereObject::willCollide(const SphereObject& other, float delta_time) const {
+		Collision<SphereObject, SphereObject> SphereObject::willCollide(const SphereObject& other, float delta_time, float sphere0_time, float sphere1_time) const {
 			/// @brief calculates collision info for this object and the other one
 			/// *this object is object 0
 
@@ -42,28 +51,33 @@ namespace undicht {
 
             // i did some math, this is the result (so no guaranties)
             // (calculating at which time the two paths get close enough for the two spheres to touch)
-            // assuming that both spheres are close enough for 32 bit floats to be big enough for this (check with could collide)
-            float delta_x = (getPosition().x - other.getPosition().x) / 10000.0f;
-            float delta_y = (getPosition().y - other.getPosition().y) / 10000.0f;
-            float delta_z = (getPosition().z - other.getPosition().z) / 10000.0f;
-            float delta_v_x = (getVelocity().x - other.getVelocity().x); // * 10000.0
-            float delta_v_y = (getVelocity().y - other.getVelocity().y); // * 10000.0
-            float delta_v_z = (getVelocity().z - other.getVelocity().z); // * 10000.0
+            // assuming that both spheres are close enough for 32 bit floats to be big enough for this (check with couldCollide())
+
+            // helper variables
+            vec3f delta = vec3f(getPosition() - other.getPosition()) / 10000.0f;
+            vec3f delta_squared = delta * delta;
+            vec3f delta_v = getVelocity() - other.getVelocity();
+            vec3f delta_v_squared = delta_v * delta_v;
             float min_dist = (getRadius() + other.getRadius()) / 10000.0f;
-            float delta_x_squared = delta_x * delta_x;
-            float delta_y_squared = delta_y * delta_y;
-            float delta_z_squared = delta_z * delta_z;
-            float delta_v_x_squared = delta_v_x * delta_v_x;
-            float delta_v_y_squared = delta_v_y * delta_v_y;
-            float delta_v_z_squared = delta_v_z * delta_v_z;
             float min_dist_squared = min_dist * min_dist;
 
-            float vel_len_sqared = delta_v_x_squared + delta_v_y_squared + delta_v_z_squared;
-            if(vel_len_sqared < 0.0000001f) return collision_info; // dont divide by zero
+            float vel_len_sqared = delta_v_squared.x + delta_v_squared.y + delta_v_squared.z;
+            if(vel_len_sqared < 0.000001f) return collision_info; // avoid dividing by zero
+
+            // moving the spheres to the same time
+            if(sphere0_time > sphere1_time) {
+                delta -= other.getVelocity() * (sphere0_time - sphere1_time);
+                delta_time -= sphere0_time;
+            } else {
+                delta += getVelocity() * (sphere1_time - sphere0_time);
+                delta_time -= sphere1_time;
+            }
+
+            if(delta_time <= 0.0f) return collision_info;
 
             // p-q formula to solve for the two times where the spheres are at a distance equal to the sum of their radii
-            float p = (delta_x * delta_v_x + delta_y * delta_v_y + delta_z * delta_v_z) / vel_len_sqared; // half of real p
-            float q = (delta_x_squared + delta_y_squared + delta_z_squared - min_dist_squared) / vel_len_sqared;
+            float p = (delta.x * delta_v.x + delta.y * delta_v.y + delta.z * delta_v.z) / vel_len_sqared; // half of real p
+            float q = (delta_squared.x + delta_squared.y + delta_squared.z - min_dist_squared) / vel_len_sqared;
 
             float tmp0 = p * p - q; // (p / 2.0) * (p / 2.0) - q
 
@@ -113,7 +127,6 @@ namespace undicht {
 
             return glm::length(pos0 - pos1) < (r0 + r1);
         }
-
 
     } // physics
 

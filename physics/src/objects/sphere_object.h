@@ -21,12 +21,12 @@ namespace undicht {
 
             /// @brief constructs spheres around the paths that the two spheres are going to take
             /// @param resolution determines the amount of spheres that are going to be used
-            bool couldCollide(const SphereObject& other, float delta_time, int32_t resolution = 1) const;
+            bool couldCollide(const SphereObject& other, float delta_time, float sphere0_time, float sphere1_time, int32_t resolution = 1) const;
 
 
 			/// @brief calculates collision info for this object and the other one
 			/// *this object is object 0
-			Collision<SphereObject, SphereObject> willCollide(const SphereObject& other, float delta_time) const;
+			Collision<SphereObject, SphereObject> willCollide(const SphereObject& other, float delta_time, float sphere0_time, float sphere1_time) const;
 
         };
 

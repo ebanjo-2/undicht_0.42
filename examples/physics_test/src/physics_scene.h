@@ -13,7 +13,9 @@ class PhysicsScene {
 
   protected:
 
-    undicht::graphics::Scene _raw_scene;
+	std::vector<undicht::physics::SphereObject> _spheres;
+
+    undicht::graphics::Scene _graphics_scene;
     undicht::physics::PhysicsSimulation _simulation;
 
   public:
