@@ -15,7 +15,8 @@ namespace undicht {
 			T1* _object1 = nullptr;
 
 			bool _will_collide;
-			double _time;  // time in seconds till impact
+            bool _are_stuck;
+			float _time;  // time in seconds till impact
 
             vec3i _position; // a point at which the two objects collide (may not be the only one)
 

@@ -51,7 +51,7 @@ namespace undicht {
             // process all meshes
             for(int i = 0; i < assimp_scene->mNumMeshes; i++) {
 
-                processAssimpMesh(assimp_scene->mMeshes[i], load_to.addMesh(), transfer_buffer);
+                processAssimpMesh(assimp_scene->mMeshes[i], load_to.addMesh(), transfer_buffer, load_to.getMaterialCount());
             }
 
             // process all materials
@@ -67,7 +67,7 @@ namespace undicht {
 
         //////////////////////////////////// functions to process meshes //////////////////////////////////////
 
-        void SceneLoader::processAssimpMesh(const aiMesh* assimp_mesh, Mesh& load_to, TransferBuffer& transfer_buffer) {
+        void SceneLoader::processAssimpMesh(const aiMesh* assimp_mesh, Mesh& load_to, TransferBuffer& transfer_buffer, uint32_t material_id_offset) {
             
             // processing vertices and faces of the mesh
             processAssimpVertices(assimp_mesh, load_to, transfer_buffer);
@@ -76,7 +76,7 @@ namespace undicht {
             // storing mesh attributes
             load_to.setVertexAttributes(assimp_mesh->HasPositions(), assimp_mesh->HasTextureCoords(0), assimp_mesh->HasNormals(), assimp_mesh->HasTangentsAndBitangents());
             load_to.setName(assimp_mesh->mName.C_Str());
-            load_to.setMaterialID(assimp_mesh->mMaterialIndex);
+            load_to.setMaterialID(assimp_mesh->mMaterialIndex + material_id_offset);
 
         }
 

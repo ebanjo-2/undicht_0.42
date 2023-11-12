@@ -17,24 +17,26 @@ using namespace physics;
 
 void setupPhysicsScene(PhysicsScene& scene) {
 
-    scene.addSphere(vec3i(0, 58000, 0), 1000, 1.0f);
-    scene.addSphere(vec3i(0, 56000, 0), 1000, 1.0f);
-    scene.addSphere(vec3i(0, 54000, 0), 1000, 1.0f);
-    scene.addSphere(vec3i(0, 52000, 0), 1000, 1.0f);
-    scene.addSphere(vec3i(0, 50000, 0), 1000, 1.0f);
-    scene.addSphere(vec3i(0, 40000, 0), 3000, 1.0f);
-    scene.addSphere(vec3i(0, 30000, 0), 5000, 1.0f);
-    scene.addSphere(vec3i(0, -10000, 0), 10000, 1.0f);
-    scene.addSphere(vec3i(-20000, 0, 0), 2000, 1.0f);
-    scene.addSphere(vec3i(0, -2000000 - 40000, 0), 2000000, 1.0f); // seams to be the close to max size 
+    scene.addSphere(vec3i(0, -2000000 - 40000, 0), 2000000, 10000000.0f, 0.8f); // seams to be close to max size 
 
-    //scene.getSphere(3).setVelocity(vec3f(0, -2000, 0));
+    scene.addSphere(vec3i(0, 63000, 0), 5000, 10.0f, 0.1f);
+    /*scene.addSphere(vec3i(0, 56000, 0), 1000, 1.0f, 0.1f);
+    scene.addSphere(vec3i(0, 54000, 0), 1000, 1.0f, 0.1f);
+    scene.addSphere(vec3i(0, 52000, 0), 1000, 1.0f, 0.1f);*/
+    scene.addSphere(vec3i(0, 50000, 0), 1000, 1.1f, 0.1f);
+    scene.addSphere(vec3i(0, 40000, 0), 3000, 400.0f, 0.8f);
+    scene.addSphere(vec3i(0, 30000, 0), 5000, 10000.0f, 0.6f);
+    scene.addSphere(vec3i(0, -10000, 0), 10000, 100000.0f, 0.8f);
+    scene.addSphere(vec3i(-20000, 0, 0), 2000, 100.0f, 0.8f);
+
+    //scene.getSphere(2).setVelocity(vec3f(0, -200, 0));
     //scene.getSphere(1).setVelocity(vec3f(0, 2, 0));
 }
 
 int main() {
 
     Application app;
+    //app.init("undicht Physics Test", VK_PRESENT_MODE_IMMEDIATE_KHR);
     app.init("undicht Physics Test", VK_PRESENT_MODE_FIFO_KHR);
 
     vma::VulkanMemoryAllocator vulkan_allocator;
@@ -65,8 +67,13 @@ int main() {
         }
 
         // physics!
-        scene.advanceSimulation(delta_time);
-        //scene.advanceSimulation(0.166);
+        // advance the physics "simulation"
+        scene.advanceSimulation(glm::min(delta_time, 0.0166f));
+        //scene.advanceSimulation(0.0166);
+
+        // hold the big sphere in place
+        scene.getSphere(0).setPosition(vec3i(0, -2000000 - 40000, 0)); 
+        scene.getSphere(0).setVelocity(vec3f(0.0f)); 
 
         // draw the scene
         if(renderer.newFrame(app.getSwapChain())) {

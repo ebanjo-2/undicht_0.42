@@ -5,6 +5,7 @@
 #include "glm/glm.hpp"
 
 #include "objects/sphere_object.h"
+#include "objects/cuboid_object.h"
 #include "simulation/physics_simulation.h"
 #include "math/physics_types.h"
 #include "vector"
@@ -13,7 +14,8 @@ class PhysicsScene {
 
   protected:
 
-	std::vector<undicht::physics::SphereObject> _spheres;
+    std::vector<undicht::physics::SphereObject> _spheres;
+    std::vector<undicht::physics::CuboidObject> _cuboids;
 
     undicht::graphics::Scene _graphics_scene;
     undicht::physics::PhysicsSimulation _simulation;
@@ -27,8 +29,11 @@ class PhysicsScene {
     
     void clearSimulation();
 
-    uint32_t addSphere(undicht::physics::vec3i position, uint32_t radius, float mass);
+    uint32_t addSphere(undicht::physics::vec3i position, uint32_t radius, float mass, float bounce_coeff);
     undicht::physics::SphereObject& getSphere(uint32_t id);
+    uint32_t addCuboid(undicht::physics::vec3i position, const undicht::physics::vec3i& half_size, float mass, float bounce_coeff);
+    undicht::physics::CuboidObject& getCuboid(uint32_t id);
+
     void update(const undicht::vulkan::LogicalDevice& device, undicht::vma::VulkanMemoryAllocator& allocator, undicht::vulkan::DescriptorSetCache& node_descriptor_cache, undicht::vulkan::TransferBuffer& transfer_buffer);
     
     undicht::graphics::Scene& getScene();

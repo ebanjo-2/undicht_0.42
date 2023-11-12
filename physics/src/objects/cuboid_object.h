@@ -3,6 +3,8 @@
 
 #include "primitives/object.h"
 #include "primitives/cuboid.h"
+#include "objects/sphere_object.h"
+#include "simulation/collision.h"
 
 namespace undicht {
 
@@ -13,9 +15,10 @@ namespace undicht {
           public:
 
             CuboidObject() = default;
-            CuboidObject(const vec3i& position, const vec3i& half_size, float mass);
+            CuboidObject(const vec3i& position, const vec3i& half_size, float mass, float bounce_coeff);
 
-            // collision detection
+            // collision detection (only with spheres, cuboid to cuboid collisions are to complicated)
+            bool isColliding(const SphereObject& sphere, Collision<SphereObject, SphereObject>& info) const;
 
         };
 

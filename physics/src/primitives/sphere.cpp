@@ -4,8 +4,8 @@ namespace undicht {
 
     namespace physics {
 
-        Sphere::Sphere( uint32_t radius, float mass) 
-        : _radius(radius), _mass(mass) {
+        Sphere::Sphere( uint32_t radius, float mass, float bounce_coeff) 
+        : _radius(radius), _mass(mass), _bounce_coeff(bounce_coeff) {
 
         }
 
@@ -19,6 +19,11 @@ namespace undicht {
             _mass = mass;
         }
 
+        void Sphere::setBounceCoeff(float bounce_coeff) {
+
+            _bounce_coeff = bounce_coeff;
+        }
+
         uint32_t Sphere::getRadius() const {
             
             return _radius;
@@ -27,6 +32,11 @@ namespace undicht {
         float Sphere::getMass() const {
 
             return _mass;
+        }
+
+        float Sphere::getBounceCoeff() const {
+
+            return _bounce_coeff;
         }
 
     } // physics

@@ -45,8 +45,15 @@ namespace undicht {
             /// @param sphere_times in order to resolve the collisions, the objects will be moved until they touch the last object they collide with
             /// the time, at which this happens, is stored in sphere_times for each sphere
             void resolveCollisions(float delta_time, std::vector<SphereObject>& spheres, std::vector<float>& sphere_times);
+            
+            /// carries out the physics behind the collision
+            /// moves the objects to the point where they collided
+            template<typename T1, typename T2>
+            void collide(const Collision<T1, T2>& c);
 
-
+            /// advances the object times for the two objects involved in the collision
+            template<typename T1, typename T2>
+            void advance(const Collision<T1, T2>& c, float delta_time, float first_coll, float prev_first_coll, float& object0_time, float& object1_time);
 
         };
 

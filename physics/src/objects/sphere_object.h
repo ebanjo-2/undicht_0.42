@@ -15,18 +15,20 @@ namespace undicht {
           public:
 
             SphereObject() = default;
-            SphereObject(const vec3i& position, uint32_t radius, float mass);
+            SphereObject(const vec3i& position, uint32_t radius, float mass, float bounce_coeff);
 
 			// collision detection
+            
+            /// @brief detect if two spheres are occupying the same space (which shouldnt happen)
+            bool isColliding(const SphereObject& other, Collision<SphereObject, SphereObject>& info, float sphere0_time, float sphere1_time) const;
 
             /// @brief constructs spheres around the paths that the two spheres are going to take
             /// @param resolution determines the amount of spheres that are going to be used
             bool couldCollide(const SphereObject& other, float delta_time, float sphere0_time, float sphere1_time, int32_t resolution = 1) const;
 
-
 			/// @brief calculates collision info for this object and the other one
 			/// *this object is object 0
-			Collision<SphereObject, SphereObject> willCollide(const SphereObject& other, float delta_time, float sphere0_time, float sphere1_time) const;
+			bool willCollide(const SphereObject& other, Collision<SphereObject, SphereObject>& info, float delta_time, float sphere0_time, float sphere1_time) const;
 
         };
 
