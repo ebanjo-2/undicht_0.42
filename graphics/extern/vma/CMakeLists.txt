@@ -10,4 +10,3 @@ target_include_directories(vma PUBLIC src)
 
 # adding the vma directory (included in the vulkan sdk)
 target_include_directories(vma PRIVATE ${Vulkan_INCLUDE_DIRS})
-set_property(TARGET vma PROPERTY CXX_STANDARD 17)

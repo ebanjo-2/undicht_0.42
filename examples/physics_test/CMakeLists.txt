@@ -2,12 +2,12 @@ add_executable(physics_test
 
     src/main.cpp 
     src/physics_renderer.h 
-    src/physics_renderer.cpp    
+    src/physics_renderer.cpp
     src/physics_scene.h 
     src/physics_scene.cpp
 )
 
-target_link_libraries(physics_test core graphics engine physics)
+target_link_libraries(physics_test core graphics engine physics tools)
 set_target_properties(physics_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # target to build the shaders for the hello_triangle example

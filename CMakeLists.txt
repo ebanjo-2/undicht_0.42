@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.7)
 project(undicht)
 
 # setting cpp standard
-set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD 17)
 
 # setting compiles flags
 if(NOT CMAKE_BUILD_TYPE)
