@@ -23,6 +23,9 @@ namespace undicht {
 
             _root_node.cleanUp();
 
+            _meshes.clear();
+            _materials.clear();
+
         }
 
         Mesh& Scene::addMesh() {

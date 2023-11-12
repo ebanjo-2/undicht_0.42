@@ -23,6 +23,8 @@ namespace undicht {
             for(Node& n : _child_nodes)
                 n.cleanUp();
 
+            _child_nodes.clear();
+
         }
 
         Node& Node::addChildNode(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& descriptor_cache) {

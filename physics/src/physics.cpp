@@ -1,7 +1,10 @@
 #include "physics.h"
-//#include "debug.h"
+#include "debug.h"
 
 #include <cstdarg>
+
+// Jolt includes
+#include <Jolt/Core/Factory.h>
 
 // All Jolt symbols are in the JPH namespace
 using namespace JPH;
@@ -12,7 +15,7 @@ namespace undicht {
 
         ////////////////////////////////////// callbacks for jolt physics //////////////////////////////////////
 
-        void traceImplCallback(const char *inFMT, ...) {
+        void traceCallback(const char *inFMT, ...) {
             // Format the message
             va_list list;
             va_start(list, inFMT);
@@ -21,12 +24,12 @@ namespace undicht {
             va_end(list);
 
             // Print to the TTY
-            //UND_LOG << buffer << "\n";
+            UND_LOG << buffer << "\n";
         }
 
-        bool assertFailedImplCallback(const char *inExpression, const char *inMessage, const char *inFile, uint inLine) {
+        bool assertFailedCallback(const char *inExpression, const char *inMessage, const char *inFile, uint inLine) {
             // Print to the TTY
-            //UND_ERROR << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr? inMessage : "") << "\n";
+            UND_ERROR << inFile << ":" << inLine << ": (" << inExpression << ") " << (inMessage != nullptr? inMessage : "") << "\n";
 
             // Breakpoint
             return true;
@@ -40,11 +43,14 @@ namespace undicht {
             RegisterDefaultAllocator();
 
             // Install callbacks
-            Trace = traceImplCallback;
-            JPH_IF_ENABLE_ASSERTS(AssertFailed = assertFailedImplCallback;)
+            Trace = traceCallback;
+            JPH_IF_ENABLE_ASSERTS(AssertFailed = assertFailedCallback;)
 
             // Create a factory
             Factory::sInstance = new Factory();
+
+            // Register all Jolt physics types
+	        RegisterTypes();
         }
 
         void cleanUpJoltPhysics() {

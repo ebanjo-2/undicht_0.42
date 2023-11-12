@@ -30,15 +30,19 @@ int main() {
 
     PhysicsScene scene;
     scene.init(app.getDevice(), vulkan_allocator, renderer.getMaterialDescriptorCache(), renderer.getNodeDescriptorCache(), renderer.getMaterialSampler());
-    scene.setupObjects();
 
     glm::mat4 camera_view = glm::lookAt(glm::vec3(0.0f, 0.0, 5.0f), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0));
     glm::mat4 camera_proj = glm::perspective(90.0f, float(app.getWindow().getWidth()) / app.getWindow().getHeight(), 0.1f, 1000.0f);   
 
     while(!app.getWindow().shouldClose()) {
 
+        if(!app.getWindow().isKeyPressed(GLFW_KEY_P))
+            scene.updatePhysics();
+
         // draw the scene
         if(renderer.newFrame(app.getSwapChain())) {
+
+            scene.updateGraphics(app.getDevice(), vulkan_allocator, renderer.getNodeDescriptorCache(), renderer.getTransferBuffer());
             
             renderer.loadCameraMatrices(camera_view, camera_proj);
             renderer.drawScene(scene);
