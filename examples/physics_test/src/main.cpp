@@ -5,9 +5,8 @@
 
 #include "physics_renderer.h"
 #include "physics_scene.h"
+#include "free_camera.h"
 
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
 #include "physics.h"
 
 
@@ -31,14 +30,25 @@ int main() {
     PhysicsScene scene;
     scene.init(app.getDevice(), vulkan_allocator, renderer.getMaterialDescriptorCache(), renderer.getNodeDescriptorCache(), renderer.getMaterialSampler());
 
-    glm::mat4 camera_view = glm::lookAt(glm::vec3(0.0f, 0.0, 5.0f), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0));
-    glm::mat4 camera_proj = glm::perspective(90.0f, float(app.getWindow().getWidth()) / app.getWindow().getHeight(), 0.1f, 1000.0f);   
+    FreeCamera cam;
+    glm::mat4 camera_view, camera_proj;
+    camera_proj = cam.getProjection(90.0f, float(app.getWindow().getWidth()) / app.getWindow().getHeight());
 
     while(!app.getWindow().shouldClose()) {
 
         if(!app.getWindow().isKeyPressed(GLFW_KEY_P))
             scene.updatePhysics();
 
+        if(app.getWindow().isKeyPressed(GLFW_KEY_LEFT_ALT))
+            app.getWindow().setCursorEnabled(true);
+        else
+            app.getWindow().setCursorEnabled(false);
+
+
+        // update the camera
+        cam.update(app.getWindow());
+        camera_view = cam.getTransformation();
+        
         // draw the scene
         if(renderer.newFrame(app.getSwapChain())) {
 
@@ -52,7 +62,8 @@ int main() {
             
             app.recreateSwapChain(VK_PRESENT_MODE_FIFO_KHR);
             renderer.recreateSwapChain(app.getSwapChain(), vulkan_allocator);
-            camera_proj = glm::perspective(90.0f, float(app.getWindow().getWidth()) / app.getWindow().getHeight(), 0.1f, 1000.0f);
+            camera_proj = cam.getProjection(100.0f, float(app.getWindow().getWidth()) / app.getWindow().getHeight());
+
         }
 
         app.getWindow().update();

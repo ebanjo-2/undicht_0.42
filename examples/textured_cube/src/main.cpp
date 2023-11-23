@@ -59,7 +59,7 @@ int main() {
     Scene scene;
     scene.init(app.getDevice(), vulkan_allocator, renderer.getNodeDescriptorCache());
     SceneLoader scene_loader;
-    //scene_loader.importScene("res/tex_cube.dae", scene, transfer_buffer, renderer.getMaterialDescriptorCache(), renderer.getMaterialSampler(), app.getDevice(), vulkan_allocator);
+    scene_loader.importScene("res/tex_cube.dae", scene, transfer_buffer, renderer.getMaterialDescriptorCache(), renderer.getNodeDescriptorCache(), renderer.getMaterialSampler(), app.getDevice(), vulkan_allocator);
     //scene_loader.importScene("res/sponza_collada/sponza.dae", scene, transfer_buffer);
     scene_loader.importScene("res/sponza/sponza.obj", scene, transfer_buffer, renderer.getMaterialDescriptorCache(), renderer.getNodeDescriptorCache(), renderer.getMaterialSampler(), app.getDevice(), vulkan_allocator);
     //scene_loader.importScene("res/billiard/sphere.dae", scene, transfer_buffer, renderer.getMaterialDescriptorCache(), renderer.getNodeDescriptorCache(), renderer.getMaterialSampler(), app.getDevice(), vulkan_allocator);

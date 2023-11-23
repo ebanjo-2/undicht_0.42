@@ -32,7 +32,7 @@ class PhysicsScene {
     undicht::physics::DebugBodyActivationListener _activation_listener;
 
     // physics objects
-    //std::vector<JPH::BodyCreationSettings> _body_settings;
+    std::vector<glm::vec3> _body_half_sizes;
     std::vector<JPH::BodyID> _body_ids;
 
   public:
@@ -41,7 +41,7 @@ class PhysicsScene {
 
     void init(const undicht::vulkan::LogicalDevice& device, undicht::vma::VulkanMemoryAllocator& allocator, undicht::vulkan::DescriptorSetCache& material_descriptor_cache, undicht::vulkan::DescriptorSetCache& node_descriptor_cache, const undicht::vulkan::Sampler& sampler);
     void cleanUp();
-    
+
     void updatePhysics();
     void updateGraphics(const undicht::vulkan::LogicalDevice& device, undicht::vma::VulkanMemoryAllocator& allocator, undicht::vulkan::DescriptorSetCache& node_descriptor_cache, undicht::vulkan::TransferBuffer& transfer_buffer);
 

@@ -46,6 +46,7 @@ namespace undicht {
             bool isFullscreen() const;
 
             void setCursorEnabled(bool enabled);
+            bool isCursorEnabled() const;
 
             void update();
             void waitForEvent(); // waits for events such as user input, which might prompt the contents of the window to get updated

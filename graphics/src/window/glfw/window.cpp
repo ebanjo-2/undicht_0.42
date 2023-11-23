@@ -121,6 +121,11 @@ namespace undicht {
 
         }
 
+        bool Window::isCursorEnabled() const {
+
+            return glfwGetInputMode(_window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL;
+        }
+
         void Window::update() {
 
             glfwPollEvents();

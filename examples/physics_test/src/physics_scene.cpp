@@ -82,12 +82,11 @@ void PhysicsScene::updateGraphics(const LogicalDevice& device, vma::VulkanMemory
         // get the world transform
         RVec3 jph_position = _body_interface->GetCenterOfMassPosition(_body_ids.at(i));
         Quat jph_rotation = _body_interface->GetRotation(_body_ids.at(i));
-        RVec3 jph_size = _body_interface->GetTransformedShape(_body_ids.at(i)).GetWorldSpaceBounds().GetExtent();
 
         // create the model matrix with glm
         glm::vec3 position(jph_position.GetX(), jph_position.GetY(), jph_position.GetZ());
         glm::quat rotation(jph_rotation.GetW(), jph_rotation.GetX(), jph_rotation.GetY(), jph_rotation.GetZ());
-        glm::mat4 model_matrix = glm::translate(position) * glm::toMat4(rotation) * glm::scale(glm::vec3(jph_size.GetX(), jph_size.GetY(), jph_size.GetZ()));
+        glm::mat4 model_matrix = glm::translate(position) * glm::toMat4(rotation) * glm::scale(_body_half_sizes.at(i));
 
         _graphics_scene.getRootNode().getChildNode(i).setModelMatrix((uint8_t*)glm::value_ptr(model_matrix), transfer_buffer);
     }
@@ -119,6 +118,7 @@ const BodyID& PhysicsScene::addSphere(const glm::vec3& position, float radius, b
 
     // store the body id
     _body_ids.push_back(sphere->GetID());
+    _body_half_sizes.push_back(glm::vec3(radius));
 
     return sphere->GetID();
 }
@@ -143,6 +143,7 @@ const BodyID& PhysicsScene::addBox(const glm::vec3& position, const glm::vec3& h
 
     // store the body id
     _body_ids.push_back(box->GetID());
+    _body_half_sizes.push_back(half_size);
 
     return box->GetID();
 }
@@ -190,13 +191,23 @@ void PhysicsScene::initPhysics() {
     _body_interface = &_physics_system.GetBodyInterface();
 
     // init objects
-    const BodyID& sphere0 = addSphere(glm::vec3(1.0f, 6.0f, 0.0f), 1.0f, true);
+    const BodyID& sphere0 = addSphere(glm::vec3(1.0f, 6.0f, 0.2f), 2.0f, true);
     const BodyID& sphere1 = addSphere(glm::vec3(0.0f, 2.0f, 0.0f), 0.8f, true);
-    const BodyID& sphere2 = addSphere(glm::vec3(0.5f, 0.0f, 0.0f), 0.5f, true);
+    const BodyID& sphere2 = addSphere(glm::vec3(0.5f, 0.0f, -0.3f), 0.5f, true);
+    const BodyID& sphere3 = addSphere(glm::vec3(0.0f, 2.0f, 3.0f), 1.3f, true);
+    const BodyID& sphere4 = addSphere(glm::vec3(2.5f, 8.0f, -0.3f), 0.7f, true);
+    const BodyID& box0 = addBox(glm::vec3(0.0f, 9.0f, 0.0f), glm::vec3(1.5f, 1.5f, 1.5f), true);
+    const BodyID& box1 = addBox(glm::vec3(3.0f, 9.0f, 3.0f), glm::vec3(1.0f, 1.0f, 1.0f), true);
+    const BodyID& box2 = addBox(glm::vec3(3.0f, 9.0f, -3.0f), glm::vec3(1.0f, 0.5f, 1.5f), true);
 
-    const BodyID& box0 = addBox(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(100.0f, 0.5f, 100.0f), false);
+    const BodyID& bounding_box0 = addBox(glm::vec3(0.0f, -5.5f, 0.0f), glm::vec3(11.0f, 0.5f, 11.0f), false);
+    const BodyID& bounding_box1 = addBox(glm::vec3(10.5f, -4.0f, 0.0f), glm::vec3(0.5f, 1.0f, 10.0f), false);
+    const BodyID& bounding_box2 = addBox(glm::vec3(-10.5f, -4.0f, 0.0f), glm::vec3(0.5f, 1.0f, 10.0f), false);
+    const BodyID& bounding_box3 = addBox(glm::vec3(0.0f, -4.0f, 10.5f), glm::vec3(10.0f, 1.0f, 0.5f), false);
+    const BodyID& bounding_box4 = addBox(glm::vec3(0.0f, -4.0f, -10.5f), glm::vec3(10.0f, 1.0f, 0.5f), false);
 
     // _body_interface->SetLinearVelocity(sphere0, Vec3Arg(0.0f, -500.0f, 0.0f));
+    // _physics_system.SetGravity(Vec3Arg(0.0f, -0.81f, 0.0f));
 
 	_physics_system.OptimizeBroadPhase();
 
