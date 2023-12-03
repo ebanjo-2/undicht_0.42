@@ -24,7 +24,7 @@ namespace undicht {
             return count;
         }
 
-        Monitor WindowAPI::getMonitor(uint32_t id) {
+        Monitor WindowAPI::getMonitor(uint32_t id) const{
 
             GLFWmonitor** monitors;
             int count;

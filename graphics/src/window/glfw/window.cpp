@@ -88,18 +88,18 @@ namespace undicht {
             return _height;
         }
 
-        void Window::setFullscreen(Monitor* monitor) {
+        void Window::setFullscreen(const Monitor& monitor) {
 
             _fullscreen = true;
 
             uint32_t width, height, refresh_rate;
-            monitor->getSize(width, height);
-            refresh_rate = monitor->getRefreshRate();
+            monitor.getSize(width, height);
+            refresh_rate = monitor.getRefreshRate();
 
-            glfwSetWindowMonitor(_window, monitor->_monitor, 0, 0, width, height, refresh_rate);
+            glfwSetWindowMonitor(_window, monitor._monitor, 0, 0, width, height, refresh_rate);
         }
 
-        void Window::setWindowed(uint32_t &width, uint32_t &height) {
+        void Window::setWindowed(uint32_t width, uint32_t height) {
             // undo fullscreen
 
             _fullscreen = false;

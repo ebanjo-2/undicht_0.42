@@ -41,8 +41,8 @@ namespace undicht {
             uint32_t getWidth() const;
             uint32_t getHeight() const;
 
-            void setFullscreen(Monitor* monitor);
-            void setWindowed(uint32_t &width, uint32_t &height); // undo fullscreen
+            void setFullscreen(const Monitor& monitor);
+            void setWindowed(uint32_t width, uint32_t height); // undo fullscreen
             bool isFullscreen() const;
 
             void setCursorEnabled(bool enabled);

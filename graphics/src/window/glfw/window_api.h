@@ -16,7 +16,7 @@ namespace undicht {
 
             uint32_t getMonitorCount() const;
 
-            Monitor getMonitor(uint32_t id = 0);
+            Monitor getMonitor(uint32_t id = 0) const;
 
             std::string info() const;
 
