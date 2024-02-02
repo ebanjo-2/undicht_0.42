@@ -81,6 +81,9 @@ set(GRAPHICS_RENDERER_SOURCES
 	src/renderer/vulkan/transfer_buffer.h	
 	src/renderer/vulkan/transfer_buffer.cpp
 	
+	src/renderer/renderer_templates/basic_renderer_template.h
+	src/renderer/renderer_templates/basic_renderer_template.cpp
+	
 )
 
 set(GRAPHICS_USER_INTERFACE_SOURCES
@@ -103,11 +106,15 @@ set(GRAPHICS_SCENE_SOURCES
     src/scene/mesh.cpp
     src/scene/material.h
     src/scene/material.cpp
+    src/scene/animation.h
+    src/scene/animation.cpp
     
     src/scene/renderer/scene_renderer.h
     src/scene/renderer/scene_renderer.cpp
     src/scene/renderer/basic/basic_renderer.h
     src/scene/renderer/basic/basic_renderer.cpp
+    src/scene/renderer/basic/basic_animation_renderer.h
+    src/scene/renderer/basic/basic_animation_renderer.cpp
     
 )
 

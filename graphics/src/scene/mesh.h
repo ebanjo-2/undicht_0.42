@@ -35,6 +35,7 @@ namespace undicht {
             bool _has_tex_coords;
             bool _has_normals;
             bool _has_tangents_and_bitangents; // if there is one there is also the other
+            bool _has_bones; // for skeletal animations
 
             uint32_t _vertex_count;
 
@@ -51,7 +52,7 @@ namespace undicht {
             void setIndexData(const uint8_t* data, uint32_t byte_size, vulkan::TransferBuffer& transfer_buffer);
 
             void setVertexCount(uint32_t count);
-            void setVertexAttributes(bool has_positions, bool has_tex_coords, bool has_normals, bool has_tangents_bitangents);
+            void setVertexAttributes(bool has_positions, bool has_tex_coords, bool has_normals, bool has_tangents_bitangents, bool has_bones);
             void setMaterialID(uint32_t material_id);
             void setName(const std::string& name);
 
@@ -59,6 +60,7 @@ namespace undicht {
             bool getHasTexCoords() const;
             bool getHasNormals() const;
             bool getHasTangentsBitangents() const;
+            bool getHasBones() const;
             uint32_t getVertexCount() const;
             uint32_t getMaterialID() const;
             std::string getName() const;

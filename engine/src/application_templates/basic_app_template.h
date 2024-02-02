@@ -21,7 +21,7 @@ namespace undicht {
         vma::VulkanMemoryAllocator _vulkan_allocator;
 
         // resources to render to a visible attachment of the swap chain
-        vulkan::RenderPass _default_render_pass; 
+        vulkan::RenderPass _default_render_pass;
         std::vector<vulkan::ImageView> _visible_swap_images;
         std::vector<vulkan::Image> _default_depth_images;
         std::vector<vulkan::ImageView> _default_depth_image_views;
@@ -59,9 +59,13 @@ namespace undicht {
         // functions for building a frame
         virtual void framePreperation(); // called before the old frame is finished on the gpu
         virtual void transferCommands(); // called after the previous frames transfer commands have finished
-        virtual void drawCommands(); // record draw commands here
+        virtual void drawCommands(int swap_image_id); // record draw commands here
         virtual void frameFinalization(); // (run must be called with wait_for_previous_frame = true) called after the previous frame has finished rendering
         virtual void recreateSwapChain();
+
+        // helper functions
+        void beginDefaultRenderPass(int swap_image_id);
+        void endDefaultRenderPass();
 
     };
 

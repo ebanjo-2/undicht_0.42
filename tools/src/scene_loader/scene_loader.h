@@ -6,6 +6,7 @@
 #include "scene/texture.h"
 #include "scene/material.h"
 #include "scene/node.h"
+#include "scene/animation.h"
 
 #include "string"
 #include "vector"
@@ -34,13 +35,17 @@ namespace undicht {
             void processAssimpMesh(const aiMesh* assimp_mesh, graphics::Mesh& load_to, vulkan::TransferBuffer& transfer_buffer, uint32_t material_id_offset);
             void processAssimpVertices(const aiMesh* assimp_mesh, graphics::Mesh& load_to, vulkan::TransferBuffer& transfer_buffer);        
             void processAssimpFaces(const aiMesh* assimp_mesh, graphics::Mesh& load_to, vulkan::TransferBuffer& transfer_buffer);
+            void processAssimpVertexBones(const aiMesh* assimp_mesh, int vertex_id, std::vector<ai_real>& load_to);
             void processAssimpVec3(const aiVector3D& assimp_vec, std::vector<ai_real>& load_to);
 
             // functions to process materials
             void processAssimpMaterial(const aiMaterial* assimp_material, graphics::Material& load_to, const std::string& directory, vulkan::TransferBuffer& transfer_buffer, const vulkan::Sampler& sampler);
 
             // functions to process nodes
-            void processAssimpNode(const aiNode* assimp_node, graphics::Node& load_to, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& node_descriptor_cache, vulkan::TransferBuffer& transfer_buffer);
+            void processAssimpNode(const aiNode* assimp_node, graphics::Node& load_to, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& node_descriptor_cache, vulkan::TransferBuffer& transfer_buffer, uint32_t meshes_offset);
+            
+            // functions to process animations
+            void processAssimpAnimation(const aiAnimation* assimp_animation, graphics::Animation& load_to);
 
         };
 

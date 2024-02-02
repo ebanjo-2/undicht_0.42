@@ -47,11 +47,14 @@ namespace undicht {
         }
 
         void SceneLoader::processAssimpScene(const aiScene* assimp_scene, Scene& load_to, const std::string& directory, TransferBuffer& transfer_buffer, vulkan::DescriptorSetCache& material_descriptor_cache, vulkan::DescriptorSetCache& node_descriptor_cache, const vulkan::Sampler& sampler, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator) {
+            
+            uint32_t meshes_offset = load_to.getMeshCount();
+            uint32_t materials_offset = load_to.getMaterialCount();
 
             // process all meshes
             for(int i = 0; i < assimp_scene->mNumMeshes; i++) {
 
-                processAssimpMesh(assimp_scene->mMeshes[i], load_to.addMesh(), transfer_buffer, load_to.getMaterialCount());
+                processAssimpMesh(assimp_scene->mMeshes[i], load_to.addMesh(), transfer_buffer, materials_offset);
             }
 
             // process all materials
@@ -61,7 +64,13 @@ namespace undicht {
             }
 
             // process all nodes (recursive)
-            processAssimpNode(assimp_scene->mRootNode, load_to.getRootNode(), device, allocator, node_descriptor_cache, transfer_buffer);
+            processAssimpNode(assimp_scene->mRootNode, load_to.getRootNode(), device, allocator, node_descriptor_cache, transfer_buffer, meshes_offset);
+
+            // process all animations
+            for(int i = 0; i < assimp_scene->mNumAnimations; i++) {
+
+                processAssimpAnimation(assimp_scene->mAnimations[i], load_to.addAnimation());
+            }
 
         }
 
@@ -74,7 +83,7 @@ namespace undicht {
             processAssimpFaces(assimp_mesh, load_to, transfer_buffer);
 
             // storing mesh attributes
-            load_to.setVertexAttributes(assimp_mesh->HasPositions(), assimp_mesh->HasTextureCoords(0), assimp_mesh->HasNormals(), assimp_mesh->HasTangentsAndBitangents());
+            load_to.setVertexAttributes(assimp_mesh->HasPositions(), assimp_mesh->HasTextureCoords(0), assimp_mesh->HasNormals(), assimp_mesh->HasTangentsAndBitangents(), assimp_mesh->HasBones());
             load_to.setName(assimp_mesh->mName.C_Str());
             load_to.setMaterialID(assimp_mesh->mMaterialIndex + material_id_offset);
 
@@ -95,6 +104,7 @@ namespace undicht {
                     processAssimpVec3(assimp_mesh->mTangents[i], vertex_data);
                     processAssimpVec3(assimp_mesh->mBitangents[i], vertex_data);
                 }
+                if(assimp_mesh->HasBones()) processAssimpVertexBones(assimp_mesh, i, vertex_data);
 
             }
 
@@ -120,6 +130,44 @@ namespace undicht {
 
             load_to.setIndexData((const uint8_t*)face_ids.data(), face_ids.size() * sizeof(uint32_t), transfer_buffer);
             load_to.setVertexCount(face_ids.size());
+        }
+
+        void SceneLoader::processAssimpVertexBones(const aiMesh* assimp_mesh, int vertex_id, std::vector<ai_real>& load_to) {
+            
+            const int MAX_BONES_PER_VERTEX = 4;
+            std::vector<int> bone_ids;
+            std::vector<aiVertexWeight*> weights; // weights of the bones that effect the vertex
+
+            // find all (or MAX_BONES_PER_VERTEX, whichever number is greater) bones that effect the vertex
+            for(int bone_id = 0; bone_id < assimp_mesh->mNumBones; bone_id++) {
+
+                aiBone* bone = assimp_mesh->mBones[bone_id];
+
+                // does the bone effect the vertex ?
+                for(int bone_vertex = 0; bone_vertex < bone->mNumWeights; bone_vertex++) {
+                    if(bone->mWeights[bone_vertex].mVertexId == vertex_id) {
+                        bone_ids.push_back(bone_id);
+                        weights.push_back(bone->mWeights + bone_vertex); // yes, the bone effects the vertex
+                        break;
+                    }
+                }
+
+            }
+
+            // store the bone indices
+            const int no_index = 0; // fallback, for when not enough bones effect the vertex
+            for(int i = 0; i < MAX_BONES_PER_VERTEX; i++) {
+                if(i < weights.size()) load_to.push_back(*(float*)&bone_ids[i]); // storing the int disguised as a float
+                else load_to.push_back(*(float*)&no_index);
+            }
+
+            // store the bone weights
+            const float no_weight = 0; // fallback, for when not enough bones effect the vertex
+            for(int i = 0; i < MAX_BONES_PER_VERTEX; i++) {
+                if(i < weights.size()) load_to.push_back(weights[i]->mWeight);
+                else load_to.push_back(no_weight);
+            }
+
         }
 
         void SceneLoader::processAssimpVec3(const aiVector3D& assimp_vec, std::vector<ai_real>& load_to) {
@@ -160,11 +208,12 @@ namespace undicht {
 
         //////////////////////////////////////////// functions to process nodes ////////////////////////////////////////////
 
-		void SceneLoader::processAssimpNode(const aiNode* assimp_node, Node& load_to, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& node_descriptor_cache, vulkan::TransferBuffer& transfer_buffer) {
+		void SceneLoader::processAssimpNode(const aiNode* assimp_node, Node& load_to, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& node_descriptor_cache, vulkan::TransferBuffer& transfer_buffer, uint32_t meshes_offset) {
             
             // store the nodes meshes
             std::vector<uint32_t> meshes;
             meshes.insert(meshes.end(), assimp_node->mMeshes, assimp_node->mMeshes + assimp_node->mNumMeshes);
+            for(uint32_t& m : meshes) m += meshes_offset;
             load_to.setMeshes(meshes);
 
             // store the model matrix
@@ -173,8 +222,18 @@ namespace undicht {
             // recursivly processing the child nodes
             for(unsigned int i = 0; i < assimp_node->mNumChildren; i++) {
 
-                processAssimpNode(assimp_node->mChildren[i], load_to.addChildNode(device, allocator, node_descriptor_cache), device, allocator, node_descriptor_cache, transfer_buffer);
+                processAssimpNode(assimp_node->mChildren[i], load_to.addChildNode(device, allocator, node_descriptor_cache), device, allocator, node_descriptor_cache, transfer_buffer, meshes_offset);
             }
+
+        }
+
+        ///////////////////////////////////////// functions to process animations /////////////////////////////////////////
+
+        void SceneLoader::processAssimpAnimation(const aiAnimation* assimp_animation, graphics::Animation& load_to) {
+
+            load_to.setName(std::string(assimp_animation->mName.C_Str()));
+
+            UND_LOG << "loaded animation " << '"' << load_to.getName() << '"' << "\n";
 
         }
 

@@ -24,6 +24,7 @@
 #include "renderer/vulkan/transfer_buffer.h"
 
 #include "scene/renderer/basic/basic_renderer.h"
+#include "scene/renderer/basic/basic_animation_renderer.h"
 
 namespace undicht {
 
@@ -53,6 +54,7 @@ namespace undicht {
             vulkan::DescriptorSet _global_descriptor_set;
 
             BasicRenderer _basic_renderer;
+            BasicAnimationRenderer _basic_animation_renderer;
 
           public:
 
@@ -69,7 +71,8 @@ namespace undicht {
             
             /// @return the number of draw calls that were made
             uint32_t draw(vulkan::CommandBuffer& cmd, Scene& scene);
-            uint32_t draw(vulkan::CommandBuffer& cmd, Scene& scene, Node& node);
+            uint32_t drawStatic(vulkan::CommandBuffer& cmd, Scene& scene, Node& node); // draws all meshes that dont have skeletal animation
+            uint32_t drawAnimated(vulkan::CommandBuffer& cmd, Scene& scene, Node& node); // draws all meshes that do have skeletal animation
 
             vulkan::DescriptorSetCache& getNodeDescriptorCache();
             vulkan::DescriptorSetCache& getMaterialDescriptorCache();

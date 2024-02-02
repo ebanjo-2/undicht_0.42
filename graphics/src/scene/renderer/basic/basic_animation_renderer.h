@@ -1,5 +1,5 @@
-#ifndef BASIC_RENDERER_H
-#define BASIC_RENDERER_H
+#ifndef BASIC_ANIMATION_RENDERER_H
+#define BASIC_ANIMATION_RENDERER_H
 
 #include "scene/scene.h"
 #include "renderer/renderer_templates/basic_renderer_template.h"
@@ -9,7 +9,7 @@ namespace undicht {
 
     namespace graphics {
 
-        class BasicRenderer : public vulkan::BasicRendererTemplate {
+        class BasicAnimationRenderer : public vulkan::BasicRendererTemplate {
 
           protected:
 
@@ -41,11 +41,11 @@ namespace undicht {
             virtual void setBlending();
             virtual void setDepthStencilState();
             virtual void setMultisampleState();
-
+            
         };
 
     } // graphics
 
 } // undicht
 
-#endif // BASIC_RENDERER_H
+#endif // BASIC_ANIMATION_RENDERER_H

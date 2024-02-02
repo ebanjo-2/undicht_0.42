@@ -53,12 +53,13 @@ namespace undicht {
             _vertex_count = count;
         }
 
-        void Mesh::setVertexAttributes(bool has_positions, bool has_tex_coords, bool has_normals, bool has_tangents_bitangents) {
+        void Mesh::setVertexAttributes(bool has_positions, bool has_tex_coords, bool has_normals, bool has_tangents_bitangents, bool has_bones) {
 
             _has_positions = has_positions;
             _has_tex_coords = has_tex_coords;
             _has_normals = has_normals;
             _has_tangents_and_bitangents = has_tangents_bitangents;
+            _has_bones = has_bones;
         }
 
         void Mesh::setMaterialID(uint32_t material_id) {
@@ -89,6 +90,11 @@ namespace undicht {
         bool Mesh::getHasTangentsBitangents() const {
 
             return _has_tangents_and_bitangents;
+        }
+
+        bool Mesh::getHasBones() const {
+
+            return _has_bones;
         }
 
         uint32_t Mesh::getVertexCount() const {

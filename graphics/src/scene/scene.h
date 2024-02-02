@@ -9,6 +9,7 @@
 #include "texture.h"
 #include "material.h"
 #include "node.h"
+#include "animation.h"
 
 #include "vector"
 
@@ -28,6 +29,7 @@ namespace undicht {
 			
 			std::vector<Mesh> _meshes;
 			std::vector<Material> _materials;
+			std::vector<Animation> _animations;
 
 			Node _root_node;
 
@@ -38,6 +40,7 @@ namespace undicht {
 			
 			Mesh& addMesh();
 			Material& addMaterial(vulkan::DescriptorSetCache& descriptor_cache);
+			Animation& addAnimation();
 
 			// records the commands to generate the mip maps
 			// for all textures of the materials
@@ -45,6 +48,7 @@ namespace undicht {
 
 			Node& getRootNode();
 			Mesh& getMesh(uint32_t mesh_id);
+			uint32_t getMeshCount() const;
 			Material& getMaterial(uint32_t material_id);
 			uint32_t getMaterialCount() const;
 

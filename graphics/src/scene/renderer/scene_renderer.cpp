@@ -24,6 +24,7 @@ namespace undicht {
             initSampler();
 
             _basic_renderer.init(device.getDevice(), _render_pass.getRenderPass(), _global_descriptor_layout.getLayout(), _material_descriptor_layout.getLayout(), _node_descriptor_layout.getLayout(), swap_chain.getExtent());
+            _basic_animation_renderer.init(device.getDevice(), _render_pass.getRenderPass(), _global_descriptor_layout.getLayout(), _material_descriptor_layout.getLayout(), _node_descriptor_layout.getLayout(), swap_chain.getExtent());
 
             _global_descriptor_set.bindUniformBuffer(0, _uniform_buffer);
             _global_descriptor_set.update();
@@ -33,6 +34,7 @@ namespace undicht {
         void SceneRenderer::cleanUp(SwapChain& swap_chain) {
 
             _basic_renderer.cleanUp();
+            _basic_animation_renderer.cleanUp();
 
             swap_chain.freeSwapImages(_swap_images);
             cleanUpDepthImages();
@@ -64,6 +66,7 @@ namespace undicht {
 
             // change the viewport of the renderers
             _basic_renderer.setViewPort(swap_chain.getExtent());
+            _basic_animation_renderer.setViewPort(swap_chain.getExtent());
 
         }
 
@@ -93,18 +96,23 @@ namespace undicht {
         uint32_t SceneRenderer::draw(vulkan::CommandBuffer& cmd, Scene& scene) {
             /// @return the number of draw calls that were made
 
-            // only one renderer used for now
+            // counting draw calls
+            uint32_t draw_calls = 0;
+
+            // draw all meshes that dont have skeletal animation
             _basic_renderer.begin(cmd, _global_descriptor_set.getDescriptorSet());
-
-            // will draw the entire scene recursivly
-            uint32_t draw_calls = draw(cmd, scene, scene.getRootNode());
-
+            draw_calls += drawStatic(cmd, scene, scene.getRootNode());
             _basic_renderer.end(cmd);
+
+            // draw all meshes that do have skeletal animation
+            _basic_animation_renderer.begin(cmd, _global_descriptor_set.getDescriptorSet());
+            draw_calls += drawAnimated(cmd, scene, scene.getRootNode());
+            _basic_animation_renderer.end(cmd);
 
             return draw_calls;
         }
 
-        uint32_t SceneRenderer::draw(vulkan::CommandBuffer& cmd, Scene& scene, Node& node) {
+        uint32_t SceneRenderer::drawStatic(vulkan::CommandBuffer& cmd, Scene& scene, Node& node) {
             /// @return the number of draw calls that were made
 
             // doesnt draw the nodes children
@@ -112,7 +120,21 @@ namespace undicht {
 
             // recursivly draw the child nodes
             for(Node& n : node.getChildNodes()) {
-                draw_calls += draw(cmd, scene, n);
+                draw_calls += drawStatic(cmd, scene, n);
+            }
+
+            return draw_calls;
+        }
+
+        uint32_t SceneRenderer::drawAnimated(vulkan::CommandBuffer& cmd, Scene& scene, Node& node) {
+            /// @return the number of draw calls that were made
+
+            // doesnt draw the nodes children
+            uint32_t draw_calls = _basic_animation_renderer.draw(cmd, scene, node);
+
+            // recursivly draw the child nodes
+            for(Node& n : node.getChildNodes()) {
+                draw_calls += drawAnimated(cmd, scene, n);
             }
 
             return draw_calls;
@@ -220,7 +242,7 @@ namespace undicht {
 
         void SceneRenderer::initSampler() {
             
-            _material_sampler.setMinFilter(VK_FILTER_LINEAR);
+            _material_sampler.setMinFilter(VK_FILTER_NEAREST);
             _material_sampler.setMipMapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR);
             _material_sampler.init(_device_handle.getDevice());
 

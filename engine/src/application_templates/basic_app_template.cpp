@@ -67,9 +67,7 @@ namespace undicht {
             transferCommands();
 
             // Step 6: record draw commands
-            getDrawCmd().beginRenderPass(_default_render_pass.getRenderPass(), _default_framebuffers.at(swap_image_id).getFramebuffer(), _swap_chain.getExtent(), {_clear_color, _clear_color});
-            drawCommands();
-            getDrawCmd().endRenderPass();
+            drawCommands(swap_image_id);
 
             // Step 7: end command buffers
             getTransferCmd().endCommandBuffer();
@@ -183,8 +181,8 @@ namespace undicht {
 
     } 
     
-    void BasicAppTemplate::drawCommands() {
-        // executed after the previous frames transfer commands have finished
+    void BasicAppTemplate::drawCommands(int swap_image_id) {
+        // record draw commands here
 
     }
 
@@ -211,6 +209,18 @@ namespace undicht {
         setupDepthImageViews();
         setupDefaultFramebuffers();
 
+    }        
+    
+    //////////////////////////////// helper functions ////////////////////////////////
+
+    void BasicAppTemplate::beginDefaultRenderPass(int swap_image_id) {
+
+        getDrawCmd().beginRenderPass(_default_render_pass.getRenderPass(), _default_framebuffers.at(swap_image_id).getFramebuffer(), _swap_chain.getExtent(), {_clear_color, _clear_color});
     }
 
+    void BasicAppTemplate::endDefaultRenderPass() {
+
+        getDrawCmd().endRenderPass();
+    }
+    
 } // undicht

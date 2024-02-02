@@ -44,6 +44,13 @@ namespace undicht {
             return _materials.back();
         }
 
+		Animation& Scene::addAnimation() {
+
+            _animations.emplace_back(Animation());
+
+            return _animations.back();
+        }
+
         void Scene::genMipMaps(vulkan::CommandBuffer& cmd) {
             // records the commands to generate the mip maps
 
@@ -60,6 +67,11 @@ namespace undicht {
         Mesh& Scene::getMesh(uint32_t mesh_id) {
 
             return _meshes.at(mesh_id);
+        }
+
+		uint32_t Scene::getMeshCount() const {
+
+            return _meshes.size();
         }
 
         Material& Scene::getMaterial(uint32_t material_id) {
