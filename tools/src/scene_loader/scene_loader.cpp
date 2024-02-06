@@ -13,8 +13,23 @@ namespace undicht {
         using namespace graphics;
         using namespace vulkan;
 
-        void SceneLoader::importScene(const std::string& file_name, Scene& load_to, TransferBuffer& transfer_buffer, vulkan::DescriptorSetCache& material_descriptor_cache, vulkan::DescriptorSetCache& node_descriptor_cache, const vulkan::Sampler& sampler, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator) {
+        void SceneLoader::setInitObjects(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::TransferBuffer& transfer_buffer, vulkan::DescriptorSetCache& material_descriptor_cache, vulkan::DescriptorSetCache& node_descriptor_cache, const vulkan::Sampler& sampler) {
+            
+            _device = &device;
+            _transfer_buffer = &transfer_buffer;
+            _material_descriptor_cache = &material_descriptor_cache;
+            _node_descriptor_cache = &node_descriptor_cache;
+            _sampler = &sampler;
+            _allocator = &allocator;
+        }
+
+        void SceneLoader::importScene(const std::string& file_name, SceneGroup& load_to) {
             // following the tutorial: https://learnopengl.com/Model-Loading/Model
+
+            if(!_device) {
+                UND_ERROR << "SceneLoader is not initialized (call setInitObjects())\n";
+                return;
+            }
 
             // getting the working directory from the file_name
             std::string directory = getFilePath(file_name);
@@ -24,10 +39,13 @@ namespace undicht {
 
             // reading the file using the assimp library
             const aiScene *assimp_scene = importAssimpScene(importer, file_name);
-            if(assimp_scene == nullptr) return;
+            if(assimp_scene == nullptr) {
+                UND_ERROR << "failed to load assimp scene: " << file_name << "\n";
+                return;
+            }
 
             // loading the data from the assimp scene into the load_to scene
-            processAssimpScene(assimp_scene, load_to, directory, transfer_buffer, material_descriptor_cache, node_descriptor_cache, sampler, device, allocator);
+            processAssimpScene(assimp_scene, load_to, directory);
 
         }
 
@@ -46,50 +64,55 @@ namespace undicht {
             return scene;
         }
 
-        void SceneLoader::processAssimpScene(const aiScene* assimp_scene, Scene& load_to, const std::string& directory, TransferBuffer& transfer_buffer, vulkan::DescriptorSetCache& material_descriptor_cache, vulkan::DescriptorSetCache& node_descriptor_cache, const vulkan::Sampler& sampler, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator) {
+        void SceneLoader::processAssimpScene(const aiScene* assimp_scene, SceneGroup& load_to, const std::string& directory) {
             
-            uint32_t meshes_offset = load_to.getMeshCount();
-            uint32_t materials_offset = load_to.getMaterialCount();
 
             // process all meshes
             for(int i = 0; i < assimp_scene->mNumMeshes; i++) {
 
-                processAssimpMesh(assimp_scene->mMeshes[i], load_to.addMesh(), transfer_buffer, materials_offset);
+                const aiMesh* ai_mesh = assimp_scene->mMeshes[i];
+                processAssimpMesh(ai_mesh, load_to.addMesh(ai_mesh->mName.C_Str()), (const aiMaterial**)assimp_scene->mMaterials);
             }
 
             // process all materials
             for(int i = 0; i < assimp_scene->mNumMaterials; i++) {
 
-                processAssimpMaterial(assimp_scene->mMaterials[i], load_to.addMaterial(material_descriptor_cache), directory, transfer_buffer, sampler);
+                const aiMaterial* ai_material = assimp_scene->mMaterials[i];
+                processAssimpMaterial(ai_material, load_to.addMaterial(ai_material->GetName().C_Str()), directory);
             }
 
             // process all nodes (recursive)
-            processAssimpNode(assimp_scene->mRootNode, load_to.getRootNode(), device, allocator, node_descriptor_cache, transfer_buffer, meshes_offset);
+            processAssimpNode(assimp_scene->mRootNode, load_to.getRootNode(), (const aiMesh**)assimp_scene->mMeshes);
 
             // process all animations
             for(int i = 0; i < assimp_scene->mNumAnimations; i++) {
 
-                processAssimpAnimation(assimp_scene->mAnimations[i], load_to.addAnimation());
+                const aiAnimation* ai_animation = assimp_scene->mAnimations[i];
+                processAssimpAnimation(assimp_scene->mAnimations[i], load_to.addAnimation(ai_animation->mName.C_Str()));
             }
 
         }
 
         //////////////////////////////////// functions to process meshes //////////////////////////////////////
 
-        void SceneLoader::processAssimpMesh(const aiMesh* assimp_mesh, Mesh& load_to, TransferBuffer& transfer_buffer, uint32_t material_id_offset) {
+        void SceneLoader::processAssimpMesh(const aiMesh* assimp_mesh, Mesh& load_to, const aiMaterial** materials) {
             
+            // init the mesh
+            load_to.init(*_device, *_allocator);
+
             // processing vertices and faces of the mesh
-            processAssimpVertices(assimp_mesh, load_to, transfer_buffer);
-            processAssimpFaces(assimp_mesh, load_to, transfer_buffer);
+            processAssimpVertices(assimp_mesh, load_to);
+            processAssimpFaces(assimp_mesh, load_to);
 
             // storing mesh attributes
             load_to.setVertexAttributes(assimp_mesh->HasPositions(), assimp_mesh->HasTextureCoords(0), assimp_mesh->HasNormals(), assimp_mesh->HasTangentsAndBitangents(), assimp_mesh->HasBones());
             load_to.setName(assimp_mesh->mName.C_Str());
-            load_to.setMaterialID(assimp_mesh->mMaterialIndex + material_id_offset);
+            // load_to.setMaterialID(assimp_mesh->mMaterialIndex + material_id_offset);
+            load_to.setMaterial(materials[assimp_mesh->mMaterialIndex]->GetName().C_Str());
 
         }
 
-        void SceneLoader::processAssimpVertices(const aiMesh* assimp_mesh, Mesh& load_to, TransferBuffer& transfer_buffer) {
+        void SceneLoader::processAssimpVertices(const aiMesh* assimp_mesh, Mesh& load_to) {
 
             std::vector<ai_real> vertex_data;
 
@@ -108,10 +131,10 @@ namespace undicht {
 
             }
 
-            load_to.setVertexData((const uint8_t*)vertex_data.data(), vertex_data.size() * sizeof(ai_real), transfer_buffer);
+            load_to.setVertexData((const uint8_t*)vertex_data.data(), vertex_data.size() * sizeof(ai_real), *_transfer_buffer);
         }
 
-        void SceneLoader::processAssimpFaces(const aiMesh* assimp_mesh, Mesh& load_to, TransferBuffer& transfer_buffer) {
+        void SceneLoader::processAssimpFaces(const aiMesh* assimp_mesh, Mesh& load_to) {
 
             std::vector<uint32_t> face_ids;
 
@@ -128,7 +151,7 @@ namespace undicht {
 
             }
 
-            load_to.setIndexData((const uint8_t*)face_ids.data(), face_ids.size() * sizeof(uint32_t), transfer_buffer);
+            load_to.setIndexData((const uint8_t*)face_ids.data(), face_ids.size() * sizeof(uint32_t), *_transfer_buffer);
             load_to.setVertexCount(face_ids.size());
         }
 
@@ -179,7 +202,10 @@ namespace undicht {
 
 		/////////////////////////////////////// functions to process Materials ///////////////////////////////////////
 
-        void SceneLoader::processAssimpMaterial(const aiMaterial* assimp_material, Material& load_to, const std::string& directory, TransferBuffer& transfer_buffer, const vulkan::Sampler& sampler) {
+        void SceneLoader::processAssimpMaterial(const aiMaterial* assimp_material, Material& load_to, const std::string& directory) {
+            
+            // init the material
+            load_to.init(*_device, *_allocator, *_material_descriptor_cache);
 
             // string to store the textures file name
             aiString file_name;
@@ -188,7 +214,7 @@ namespace undicht {
             if(assimp_material->GetTextureCount(aiTextureType_DIFFUSE) >= 1) {
                 assimp_material->GetTexture(aiTextureType_DIFFUSE, 0, &file_name);
                 Texture& diffuse = load_to.addTexture(Texture::Type::DIFFUSE);
-                TextureLoader(directory + file_name.C_Str(), diffuse, transfer_buffer);
+                TextureLoader(directory + file_name.C_Str(), diffuse, *_transfer_buffer);
 
                 UND_LOG << "loaded diffuse texture: " << file_name.C_Str() << "\n";
             }
@@ -197,32 +223,34 @@ namespace undicht {
             if(assimp_material->GetTextureCount(aiTextureType_SPECULAR) >= 1) {
                 assimp_material->GetTexture(aiTextureType_SPECULAR, 0, &file_name);
                 Texture& specular = load_to.addTexture(Texture::Type::SPECULAR);
-                TextureLoader(directory + file_name.C_Str(), specular, transfer_buffer);
+                TextureLoader(directory + file_name.C_Str(), specular, *_transfer_buffer);
 
                 UND_LOG << "loaded specular texture: " << file_name.C_Str() << "\n";
             }
 
-            load_to.updateDescriptorSet(sampler);
+            load_to.updateDescriptorSet(*_sampler);
 
         }
 
         //////////////////////////////////////////// functions to process nodes ////////////////////////////////////////////
 
-		void SceneLoader::processAssimpNode(const aiNode* assimp_node, Node& load_to, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& node_descriptor_cache, vulkan::TransferBuffer& transfer_buffer, uint32_t meshes_offset) {
+		void SceneLoader::processAssimpNode(const aiNode* assimp_node, Node& load_to, const aiMesh** scene_meshes) {
             
             // store the nodes meshes
-            std::vector<uint32_t> meshes;
-            meshes.insert(meshes.end(), assimp_node->mMeshes, assimp_node->mMeshes + assimp_node->mNumMeshes);
-            for(uint32_t& m : meshes) m += meshes_offset;
+            std::vector<std::string> meshes;
+            for(int i = 0; i < assimp_node->mNumMeshes; i++) {
+                meshes.push_back(scene_meshes[assimp_node->mMeshes[i]]->mName.C_Str());
+            }
+                
             load_to.setMeshes(meshes);
 
             // store the model matrix
-            load_to.setModelMatrix((uint8_t*)&assimp_node->mTransformation, transfer_buffer);
+            load_to.setModelMatrix((uint8_t*)&assimp_node->mTransformation, *_transfer_buffer);
 
             // recursivly processing the child nodes
             for(unsigned int i = 0; i < assimp_node->mNumChildren; i++) {
 
-                processAssimpNode(assimp_node->mChildren[i], load_to.addChildNode(device, allocator, node_descriptor_cache), device, allocator, node_descriptor_cache, transfer_buffer, meshes_offset);
+                processAssimpNode(assimp_node->mChildren[i], load_to.addChildNode(assimp_node->mName.C_Str(), *_device, *_allocator, *_node_descriptor_cache), scene_meshes);
             }
 
         }
@@ -231,6 +259,7 @@ namespace undicht {
 
         void SceneLoader::processAssimpAnimation(const aiAnimation* assimp_animation, graphics::Animation& load_to) {
 
+            load_to.init();
             load_to.setName(std::string(assimp_animation->mName.C_Str()));
 
             UND_LOG << "loaded animation " << '"' << load_to.getName() << '"' << "\n";

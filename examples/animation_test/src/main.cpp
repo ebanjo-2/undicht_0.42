@@ -38,11 +38,12 @@ class AnimationTest : public BasicAppTemplate {
         _renderer.init(getDevice(), getSwapChain(), _vulkan_allocator);
 
         SceneLoader loader;
-        _scene.init(getDevice(), _vulkan_allocator, _renderer.getNodeDescriptorCache());
+        loader.setInitObjects(getDevice(), _vulkan_allocator, _transfer_buffer, _renderer.getMaterialDescriptorCache(), _renderer.getNodeDescriptorCache(), _renderer.getMaterialSampler());
+        _scene.init();
         // the model.dae file (and diffuse texture) are taken from the ThinMatrix tutorial github:
         // https://github.com/TheThinMatrix/OpenGL-Animation
-        loader.importScene("res/model.dae", _scene, _transfer_buffer, _renderer.getMaterialDescriptorCache(), _renderer.getNodeDescriptorCache(), _renderer.getMaterialSampler(), getDevice(), _vulkan_allocator);
-        loader.importScene("res/tex_cube.dae", _scene, _transfer_buffer, _renderer.getMaterialDescriptorCache(), _renderer.getNodeDescriptorCache(), _renderer.getMaterialSampler(), getDevice(), _vulkan_allocator);
+        loader.importScene("res/model.dae", _scene.addGroup("animation", getDevice(), _vulkan_allocator, _renderer.getNodeDescriptorCache()));
+        loader.importScene("res/tex_cube.dae", _scene.addGroup("cube", getDevice(), _vulkan_allocator, _renderer.getNodeDescriptorCache()));
         _transfer_buffer.completeTransfers(_load_cmd_buffer);
         _scene.genMipMaps(_load_cmd_buffer);
 
@@ -51,8 +52,9 @@ class AnimationTest : public BasicAppTemplate {
         model_mat = glm::rotate(model_mat, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         model_mat = glm::rotate(model_mat, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-        for(Node& n : _scene.getRootNode().getChildNodes()) 
-            n.setModelMatrix((const uint8_t*)glm::value_ptr(model_mat), _transfer_buffer);
+        for(SceneGroup& s : _scene.getGroups())
+            for(Node& n : s.getRootNode().getChildNodes()) 
+                n.setModelMatrix((const uint8_t*)glm::value_ptr(model_mat), _transfer_buffer);
 
         _load_cmd_buffer.endCommandBuffer();
         getDevice().submitOnGraphicsQueue(_load_cmd_buffer.getCommandBuffer());

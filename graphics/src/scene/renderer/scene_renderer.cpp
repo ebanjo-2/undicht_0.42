@@ -101,40 +101,40 @@ namespace undicht {
 
             // draw all meshes that dont have skeletal animation
             _basic_renderer.begin(cmd, _global_descriptor_set.getDescriptorSet());
-            draw_calls += drawStatic(cmd, scene, scene.getRootNode());
+            for(SceneGroup& group : scene.getGroups()) draw_calls += drawStatic(cmd, group, group.getRootNode());
             _basic_renderer.end(cmd);
 
             // draw all meshes that do have skeletal animation
             _basic_animation_renderer.begin(cmd, _global_descriptor_set.getDescriptorSet());
-            draw_calls += drawAnimated(cmd, scene, scene.getRootNode());
+            for(SceneGroup& group : scene.getGroups()) draw_calls += drawAnimated(cmd, group, group.getRootNode());
             _basic_animation_renderer.end(cmd);
 
             return draw_calls;
         }
 
-        uint32_t SceneRenderer::drawStatic(vulkan::CommandBuffer& cmd, Scene& scene, Node& node) {
+        uint32_t SceneRenderer::drawStatic(vulkan::CommandBuffer& cmd, SceneGroup& scene_group, Node& node) {
             /// @return the number of draw calls that were made
 
             // doesnt draw the nodes children
-            uint32_t draw_calls = _basic_renderer.draw(cmd, scene, node);
+            uint32_t draw_calls = _basic_renderer.draw(cmd, scene_group, node);
 
             // recursivly draw the child nodes
             for(Node& n : node.getChildNodes()) {
-                draw_calls += drawStatic(cmd, scene, n);
+                draw_calls += drawStatic(cmd, scene_group, n);
             }
 
             return draw_calls;
         }
 
-        uint32_t SceneRenderer::drawAnimated(vulkan::CommandBuffer& cmd, Scene& scene, Node& node) {
+        uint32_t SceneRenderer::drawAnimated(vulkan::CommandBuffer& cmd, SceneGroup& scene_group, Node& node) {
             /// @return the number of draw calls that were made
 
             // doesnt draw the nodes children
-            uint32_t draw_calls = _basic_animation_renderer.draw(cmd, scene, node);
+            uint32_t draw_calls = _basic_animation_renderer.draw(cmd, scene_group, node);
 
             // recursivly draw the child nodes
             for(Node& n : node.getChildNodes()) {
-                draw_calls += drawAnimated(cmd, scene, n);
+                draw_calls += drawAnimated(cmd, scene_group, n);
             }
 
             return draw_calls;

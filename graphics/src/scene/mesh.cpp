@@ -62,14 +62,19 @@ namespace undicht {
             _has_bones = has_bones;
         }
 
-        void Mesh::setMaterialID(uint32_t material_id) {
+        /*void Mesh::setMaterialID(uint32_t material_id) {
 
             _material_id = material_id;
-        }
+        }*/
 
         void Mesh::setName(const std::string& name) {
 
             _name = name;
+        }
+
+        void Mesh::setMaterial(const std::string& material) {
+
+            _material = material;
         }
 
         bool Mesh::getHasPositions() const {
@@ -102,14 +107,19 @@ namespace undicht {
             return _vertex_count;
         }
 
-        uint32_t Mesh::getMaterialID() const {
+        /*uint32_t Mesh::getMaterialID() const {
 
             return _material_id;
-        }
+        }*/
 
-        std::string Mesh::getName() const {
+        const std::string& Mesh::getName() const {
 
             return _name;
+        }
+
+        const std::string& Mesh::getMaterial() const {
+
+            return _material;
         }
 
         const vulkan::Buffer& Mesh::getVertexBuffer() const {

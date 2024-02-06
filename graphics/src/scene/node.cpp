@@ -27,10 +27,11 @@ namespace undicht {
 
         }
 
-        Node& Node::addChildNode(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& descriptor_cache) {
+        Node& Node::addChildNode(const std::string& node_name, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& descriptor_cache) {
 
             _child_nodes.emplace_back(Node());
             _child_nodes.back().init(device, allocator, descriptor_cache);
+            _child_nodes.back().setName(node_name);
 
             return _child_nodes.back();
         }
@@ -53,17 +54,46 @@ namespace undicht {
             return _child_nodes.size();
         }
             
-        Node& Node::getChildNode(uint32_t id) {
+        /*Node& Node::getChildNode(uint32_t id) {
 
             return _child_nodes.at(id);
+        }*/
+
+        Node* Node::getChildNode(const std::string& node_name) {
+
+            for(Node& n : _child_nodes) 
+                if(!n.getName().compare(node_name))
+                    return &n;
+
+            return nullptr;
         }
 
-        void Node::setMeshes(std::vector<uint32_t> meshes) {
+        /*void Node::setMeshes(std::vector<uint32_t> meshes) {
 
             _meshes = meshes;
         }
 
         const std::vector<uint32_t>& Node::getMeshes() const {
+
+            return _meshes;
+        }*/
+
+        void Node::setName(const std::string& name) {
+
+            _name = name;
+        }
+
+        const std::string& Node::getName() const {
+
+            return _name;
+        }
+
+        void Node::setMeshes(const std::vector<std::string>& meshes) {
+
+            _meshes = meshes;
+        }
+
+        const std::vector<std::string>& Node::getMeshes() const {
 
             return _meshes;
         }

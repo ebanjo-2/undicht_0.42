@@ -21,28 +21,43 @@ namespace undicht {
 
         class SceneLoader {
 
+          protected:
+
+            // vulkan objects to use when creating scene objects
+            const vulkan::LogicalDevice* _device = nullptr;
+            vulkan::TransferBuffer* _transfer_buffer = nullptr;
+            vulkan::DescriptorSetCache* _material_descriptor_cache = nullptr;
+            vulkan::DescriptorSetCache* _node_descriptor_cache = nullptr;
+            const vulkan::Sampler* _sampler = nullptr;
+            vma::VulkanMemoryAllocator* _allocator = nullptr;
+
+
           public:
 
-            void importScene(const std::string& file_name, graphics::Scene& load_to, vulkan::TransferBuffer& transfer_buffer, vulkan::DescriptorSetCache& material_descriptor_cache, vulkan::DescriptorSetCache& node_descriptor_cache, const vulkan::Sampler& sampler, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator);
+            // store references to the objects
+            // that the loader should use when initializing vulkan objects
+            void setInitObjects(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::TransferBuffer& transfer_buffer, vulkan::DescriptorSetCache& material_descriptor_cache, vulkan::DescriptorSetCache& node_descriptor_cache, const vulkan::Sampler& sampler);
+
+            void importScene(const std::string& file_name, graphics::SceneGroup& load_to);
 
           protected:
             // non public SceneLoader functions
 
             const aiScene* importAssimpScene(Assimp::Importer& importer, const std::string& file_name) const;
-            void processAssimpScene(const aiScene* assimp_scene, graphics::Scene& load_to, const std::string& directory, vulkan::TransferBuffer& transfer_buffer, vulkan::DescriptorSetCache& material_descriptor_cache, vulkan::DescriptorSetCache& node_descriptor_cache, const vulkan::Sampler& sampler, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator);
+            void processAssimpScene(const aiScene* assimp_scene, graphics::SceneGroup& load_to, const std::string& directory);
 
 		        // functions to process meshes
-            void processAssimpMesh(const aiMesh* assimp_mesh, graphics::Mesh& load_to, vulkan::TransferBuffer& transfer_buffer, uint32_t material_id_offset);
-            void processAssimpVertices(const aiMesh* assimp_mesh, graphics::Mesh& load_to, vulkan::TransferBuffer& transfer_buffer);        
-            void processAssimpFaces(const aiMesh* assimp_mesh, graphics::Mesh& load_to, vulkan::TransferBuffer& transfer_buffer);
+            void processAssimpMesh(const aiMesh* assimp_mesh, graphics::Mesh& load_to, const aiMaterial** materials);
+            void processAssimpVertices(const aiMesh* assimp_mesh, graphics::Mesh& load_to);        
+            void processAssimpFaces(const aiMesh* assimp_mesh, graphics::Mesh& load_to);
             void processAssimpVertexBones(const aiMesh* assimp_mesh, int vertex_id, std::vector<ai_real>& load_to);
             void processAssimpVec3(const aiVector3D& assimp_vec, std::vector<ai_real>& load_to);
 
             // functions to process materials
-            void processAssimpMaterial(const aiMaterial* assimp_material, graphics::Material& load_to, const std::string& directory, vulkan::TransferBuffer& transfer_buffer, const vulkan::Sampler& sampler);
+            void processAssimpMaterial(const aiMaterial* assimp_material, graphics::Material& load_to, const std::string& directory);
 
             // functions to process nodes
-            void processAssimpNode(const aiNode* assimp_node, graphics::Node& load_to, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& node_descriptor_cache, vulkan::TransferBuffer& transfer_buffer, uint32_t meshes_offset);
+            void processAssimpNode(const aiNode* assimp_node, graphics::Node& load_to, const aiMesh** scene_meshes);
             
             // functions to process animations
             void processAssimpAnimation(const aiAnimation* assimp_animation, graphics::Animation& load_to);

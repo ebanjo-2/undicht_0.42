@@ -71,8 +71,8 @@ namespace undicht {
             
             /// @return the number of draw calls that were made
             uint32_t draw(vulkan::CommandBuffer& cmd, Scene& scene);
-            uint32_t drawStatic(vulkan::CommandBuffer& cmd, Scene& scene, Node& node); // draws all meshes that dont have skeletal animation
-            uint32_t drawAnimated(vulkan::CommandBuffer& cmd, Scene& scene, Node& node); // draws all meshes that do have skeletal animation
+            uint32_t drawStatic(vulkan::CommandBuffer& cmd, SceneGroup& scene, Node& node); // draws all meshes that dont have skeletal animation
+            uint32_t drawAnimated(vulkan::CommandBuffer& cmd, SceneGroup& scene, Node& node); // draws all meshes that do have skeletal animation
 
             vulkan::DescriptorSetCache& getNodeDescriptorCache();
             vulkan::DescriptorSetCache& getMaterialDescriptorCache();

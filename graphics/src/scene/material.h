@@ -5,6 +5,7 @@
 #include "core/vulkan/descriptor_set.h"
 #include "renderer/vulkan/descriptor_set_cache.h"
 #include "core/vulkan/sampler.h"
+#include "string"
 
 namespace undicht {
 
@@ -18,6 +19,7 @@ namespace undicht {
             vma::VulkanMemoryAllocator _allocator_handle;
 
             // attributes of the Material
+            std::string _name;
             std::vector<Texture> _textures;
 
             vulkan::DescriptorSet _descriptor_set;
@@ -26,6 +28,9 @@ namespace undicht {
 
             void init(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& descriptor_cache);
             void cleanUp();
+
+            void setName(const std::string& name);
+            const std::string& getName() const;
 
             Texture& addTexture(Texture::Type type);
 

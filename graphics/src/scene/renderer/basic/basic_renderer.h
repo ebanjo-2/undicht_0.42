@@ -26,7 +26,7 @@ namespace undicht {
 
             /// @brief draws the meshes of the node, does not draw child nodes
             /// @return the number of draw calls that were made
-            uint32_t draw(vulkan::CommandBuffer& cmd, Scene& scene, Node& node);
+            uint32_t draw(vulkan::CommandBuffer& cmd, SceneGroup& scene, Node& node);
 
           protected:
             // functions to initialize parts of the renderer

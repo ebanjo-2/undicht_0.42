@@ -22,6 +22,16 @@ namespace undicht {
 
         }
 
+        void Material::setName(const std::string& name) {
+
+            _name = name;
+        }
+
+        const std::string& Material::getName() const {
+
+            return _name;
+        }
+
         Texture& Material::addTexture(Texture::Type type) {
 
             _textures.emplace_back(Texture());

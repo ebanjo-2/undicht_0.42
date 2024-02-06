@@ -108,6 +108,8 @@ set(GRAPHICS_SCENE_SOURCES
     src/scene/material.cpp
     src/scene/animation.h
     src/scene/animation.cpp
+    src/scene/scene_group.h
+    src/scene/scene_group.cpp
     
     src/scene/renderer/scene_renderer.h
     src/scene/renderer/scene_renderer.cpp
