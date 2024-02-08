@@ -4,9 +4,9 @@ namespace undicht {
 
     namespace graphics {
 
-        void SceneGroup::init(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& node_descriptor_cache) {
+        void SceneGroup::init() {
 
-            _root_node.init(device, allocator, node_descriptor_cache);
+            _root_node.init(); // the root node doesnt use vulkan objects
         }
 
         void SceneGroup::cleanUp() {
@@ -115,6 +115,21 @@ namespace undicht {
             for(Material& m : _materials)
                 m.genMipMaps(cmd);
 
+        }
+
+		void SceneGroup::updateNodeUBOs(vulkan::TransferBuffer& transfer_buffer) {
+
+            _root_node.updateUniformBuffer(transfer_buffer);
+        }
+
+		void SceneGroup::updateBoneMatrices() {
+
+            _root_node.updateBoneMatrices(_root_node, _meshes);
+        }
+
+        void SceneGroup::updateGlobalTransformation() {
+
+            _root_node.updateGlobalTransformation(glm::mat4(1.0f));
         }
 
     } // graphics

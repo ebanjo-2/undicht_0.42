@@ -5,7 +5,7 @@
 
 #include "physics_renderer.h"
 #include "physics_scene.h"
-#include "free_camera.h"
+#include "3D/camera/free_camera.h"
 
 #include "physics.h"
 
@@ -47,7 +47,7 @@ int main() {
 
         // update the camera
         cam.update(app.getWindow());
-        camera_view = cam.getTransformation();
+        camera_view = cam.getView();
         
         // draw the scene
         if(renderer.newFrame(app.getSwapChain())) {

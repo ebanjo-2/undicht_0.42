@@ -5,8 +5,6 @@ add_executable(physics_test
     src/physics_renderer.cpp
     src/physics_scene.h 
     src/physics_scene.cpp
-    src/free_camera.h
-    src/free_camera.cpp
 )
 
 target_link_libraries(physics_test core graphics engine physics tools)

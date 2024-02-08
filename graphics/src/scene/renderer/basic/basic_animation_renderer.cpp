@@ -40,39 +40,25 @@ namespace undicht {
             /// @brief draws the meshes of the node, does not draw child nodes
             /// @return the number of draw calls that were made
 
-            uint32_t draw_calls = 0;
-
             // retrieve the resources used by the node
-            std::vector<Mesh*> meshes;
-            for(const std::string& mesh_name : node.getMeshes()) {
-                Mesh* mesh = scene.getMesh(mesh_name);
-                if(mesh) meshes.push_back(mesh);
-            }
+            // this renderer can only draw meshes with skeletal animation
+            Mesh* mesh = scene.getMesh(node.getMesh());
+            if(!mesh || !mesh->getHasBones()) return 0;
+             
+            Material* mat = scene.getMaterial(mesh->getMaterial());
+            if(!mat) return 0;
+            if(!mat->getTexture(Texture::Type::DIFFUSE)) return 0; // cant draw that mesh
 
-            // draw each mesh of the node
-            for(Mesh* mesh : meshes) {
+            // bind the mesh resources
+            cmd.bindDescriptorSet(mat->getDescriptorSet().getDescriptorSet(), _pipeline.getPipelineLayout(), 1);
+            cmd.bindDescriptorSet(node.getDescriptorSet().getDescriptorSet(), _pipeline.getPipelineLayout(), 2);
+            cmd.bindVertexBuffer(mesh->getVertexBuffer().getBuffer(), 0);
+            cmd.bindIndexBuffer(mesh->getIndexBuffer().getBuffer());
 
-                if(!mesh->getHasBones()) continue; // this renderer can only draw meshes with skeletal animation
+            // draw using the index buffer
+            cmd.draw(mesh->getVertexCount(), true);
 
-                // retrieve the meshes material
-                Material* mat = scene.getMaterial(mesh->getMaterial());
-
-                if(!mat) continue;
-                if(!mat->getTexture(Texture::Type::DIFFUSE)) continue; // cant draw that mesh
-
-                // bind the mesh resources
-                cmd.bindDescriptorSet(mat->getDescriptorSet().getDescriptorSet(), _pipeline.getPipelineLayout(), 1);
-                cmd.bindDescriptorSet(node.getDescriptorSet().getDescriptorSet(), _pipeline.getPipelineLayout(), 2);
-                cmd.bindVertexBuffer(mesh->getVertexBuffer().getBuffer(), 0);
-                cmd.bindIndexBuffer(mesh->getIndexBuffer().getBuffer());
-
-                // draw using the index buffer
-                cmd.draw(mesh->getVertexCount(), true);
-
-                draw_calls++;
-            }
-
-            return draw_calls;
+            return 1;
         }
 
         ///////////////////////////// functions to initialize parts of the renderer /////////////////////////////

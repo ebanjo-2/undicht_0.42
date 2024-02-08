@@ -5,6 +5,7 @@
 #include "core/vulkan/buffer.h"
 #include "core/vulkan/logical_device.h"
 #include "renderer/vulkan/transfer_buffer.h"
+#include "mesh_bone.h"
 
 #include "string"
 
@@ -42,7 +43,7 @@ namespace undicht {
             // other attributes
             std::string _name;
             std::string _material;
-            //uint32_t _material_id;
+            std::vector<MeshBone> _bones;
 
           public:
 
@@ -54,9 +55,9 @@ namespace undicht {
 
             void setVertexCount(uint32_t count);
             void setVertexAttributes(bool has_positions, bool has_tex_coords, bool has_normals, bool has_tangents_bitangents, bool has_bones);
-            //void setMaterialID(uint32_t material_id);
             void setMaterial(const std::string& material);
             void setName(const std::string& name);
+            void setBones(const std::vector<MeshBone>& bones);
 
             bool getHasPositions() const;
             bool getHasTexCoords() const;
@@ -64,9 +65,13 @@ namespace undicht {
             bool getHasTangentsBitangents() const;
             bool getHasBones() const;
             uint32_t getVertexCount() const;
-            //uint32_t getMaterialID() const;
             const std::string& getName() const;
             const std::string& getMaterial() const;
+            const std::vector<MeshBone>& getBones() const;
+
+            /// @return -1, if no bone with the name was found
+            int getBoneID(const std::string& bone_name) const;
+            const MeshBone& getBone(int bone_id) const;
 
             const vulkan::Buffer& getVertexBuffer() const;
             const vulkan::Buffer& getIndexBuffer() const;

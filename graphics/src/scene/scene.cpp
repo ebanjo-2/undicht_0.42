@@ -16,14 +16,14 @@ namespace undicht {
             for(SceneGroup& g : _groups) g.cleanUp();
         }
 
-        SceneGroup& Scene::addGroup(const std::string& group_name, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& node_descriptor_cache) {
+        SceneGroup& Scene::addGroup(const std::string& group_name) {
 
             SceneGroup* g = getGroup(group_name);
             if(g) return *g;
 
             _groups.emplace_back(SceneGroup());
             _groups.back().setName(group_name);
-            _groups.back().init(device, allocator, node_descriptor_cache);
+            _groups.back().init();
             return _groups.back();
         }
 
@@ -98,6 +98,27 @@ namespace undicht {
 
             for(SceneGroup& g : _groups)
                 g.genMipMaps(cmd);
+
+        }
+
+		void Scene::updateNodeUBOs(vulkan::TransferBuffer& transfer_buffer) {
+
+            for(SceneGroup& g : _groups)
+                g.updateNodeUBOs(transfer_buffer);
+
+        }		
+        
+        void Scene::updateBoneMatrices() {
+
+            for(SceneGroup& g : _groups)
+                g.updateBoneMatrices();
+
+        }
+
+        void Scene::updateGlobalTransformation() {
+
+            for(SceneGroup& g : _groups)
+                g.updateGlobalTransformation();
 
         }
 

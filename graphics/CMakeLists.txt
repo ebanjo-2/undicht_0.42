@@ -98,23 +98,37 @@ set(GRAPHICS_SCENE_SOURCES
 
     src/scene/scene.h
     src/scene/scene.cpp
+    
     src/scene/node.h
     src/scene/node.cpp
+    
     src/scene/texture.h
     src/scene/texture.cpp
+    
     src/scene/mesh.h
     src/scene/mesh.cpp
+    
     src/scene/material.h
     src/scene/material.cpp
+    
     src/scene/animation.h
     src/scene/animation.cpp
+    
     src/scene/scene_group.h
     src/scene/scene_group.cpp
     
+    src/scene/mesh_bone.h
+    src/scene/mesh_bone.cpp
+    
+    src/scene/node_animation.h
+    src/scene/node_animation.cpp
+    
     src/scene/renderer/scene_renderer.h
     src/scene/renderer/scene_renderer.cpp
+    
     src/scene/renderer/basic/basic_renderer.h
     src/scene/renderer/basic/basic_renderer.cpp
+    
     src/scene/renderer/basic/basic_animation_renderer.h
     src/scene/renderer/basic/basic_animation_renderer.cpp
     
@@ -135,7 +149,8 @@ add_library(graphics
     ${GRAPHICS_SCENE_SOURCES}
 )
 
-target_include_directories(graphics PUBLIC src)
+# include directories + glm
+target_include_directories(graphics PUBLIC src extern/glm)
 
 # setting the shader compile script path
 set(SHADER_COMPILE_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/src/shader/compile.py CACHE STRING "SHADER_COMPILE_SCRIPT") 

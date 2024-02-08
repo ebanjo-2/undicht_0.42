@@ -8,8 +8,10 @@ void FreeCamera::update(const undicht::graphics::Window& window) {
 
     ///// translation /////
 
-    glm::vec3 forward(glm::sin(_yaw) * glm::sin(_pitch), glm::cos(_pitch), glm::cos(_yaw) * glm::sin(_pitch));
+    glm::vec3 forward(glm::sin(_yaw) * glm::cos(_pitch), glm::sin(_pitch), glm::cos(_yaw) * glm::cos(_pitch));
     forward = glm::normalize(forward);
+    //glm::vec3 forward = glm::vec3(0,0,-1);
+
 
     glm::vec3 left = glm::cross(forward, glm::vec3(0,1,0));
     left = glm::normalize(left);
@@ -38,10 +40,12 @@ glm::mat4 FreeCamera::getProjection(float fov, float aspect_ratio) {
     return glm::perspective(glm::radians(fov), aspect_ratio, 0.1f, 1000.0f);
 }
 
-glm::mat4 FreeCamera::getTransformation() {
+glm::mat4 FreeCamera::getView() {
 
-    glm::vec3 forward(glm::sin(_yaw) * glm::sin(_pitch), glm::cos(_pitch), glm::cos(_yaw) * glm::sin(_pitch));
+    glm::vec3 forward(glm::sin(_yaw) * glm::cos(_pitch), glm::sin(_pitch), glm::cos(_yaw) * glm::cos(_pitch));
+    // glm::vec3 forward(glm::sin(_yaw) * glm::cos(_pitch), glm::sin(_pitch), glm::cos(_yaw) * glm::cos(_pitch));
     forward = glm::normalize(forward);
+    //glm::vec3 forward = glm::vec3(0,0,-1);
 
     return  glm::lookAt(_position, _position + forward, glm::vec3(0,-1,0));
 }

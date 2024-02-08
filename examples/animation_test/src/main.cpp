@@ -3,6 +3,7 @@
 #include "scene/renderer/scene_renderer.h"
 #include "scene/scene.h"
 #include "scene_loader/scene_loader.h"
+#include "3D/camera/free_camera.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -23,6 +24,8 @@ class AnimationTest : public BasicAppTemplate {
     SceneRenderer _renderer;
     Scene _scene;
 
+    FreeCamera _cam;
+
   public:
 
     void init() {
@@ -42,20 +45,24 @@ class AnimationTest : public BasicAppTemplate {
         _scene.init();
         // the model.dae file (and diffuse texture) are taken from the ThinMatrix tutorial github:
         // https://github.com/TheThinMatrix/OpenGL-Animation
-        loader.importScene("res/model.dae", _scene.addGroup("animation", getDevice(), _vulkan_allocator, _renderer.getNodeDescriptorCache()));
-        loader.importScene("res/tex_cube.dae", _scene.addGroup("cube", getDevice(), _vulkan_allocator, _renderer.getNodeDescriptorCache()));
+        loader.importScene("res/model.dae", _scene.addGroup("animation"));
+        //loader.importScene("res/bob/boblampclean.md5mesh", _scene.addGroup("animation"));
+        loader.importScene("res/tex_cube.dae", _scene.addGroup("cube"));
         _transfer_buffer.completeTransfers(_load_cmd_buffer);
+        _transfer_buffer.reset();
         _scene.genMipMaps(_load_cmd_buffer);
 
         // move and rotate the model to get a better look
         glm::mat4 model_mat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 5.0f, -10.0f));
-        model_mat = glm::rotate(model_mat, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        model_mat = glm::rotate(model_mat, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        //model_mat = glm::rotate(model_mat, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        //model_mat = glm::rotate(model_mat, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        /*glm::mat4 model_mat = glm::mat4(1.0f);*/
 
-        for(SceneGroup& s : _scene.getGroups())
-            for(Node& n : s.getRootNode().getChildNodes()) 
-                n.setModelMatrix((const uint8_t*)glm::value_ptr(model_mat), _transfer_buffer);
+        //for(SceneGroup& s : _scene.getGroups())
+        //    s.getRootNode().setLocalTransformation(model_mat);
 
+        _transfer_buffer.completeTransfers(_load_cmd_buffer);
+        _transfer_buffer.reset();
         _load_cmd_buffer.endCommandBuffer();
         getDevice().submitOnGraphicsQueue(_load_cmd_buffer.getCommandBuffer());
         getDevice().waitGraphicsQueueIdle();
@@ -74,17 +81,29 @@ class AnimationTest : public BasicAppTemplate {
 
     void framePreperation() {
         // called before the old frame is finished on the gpu
+        
+        // animations
+        //Node* bone = _scene.getGroup("animation")->getRootNode().getChildNode("Torso", true);
+        //bone->setLocalTransformation(glm::translate(glm::mat4(1.0f), glm::vec3(0,0,0)));
+
+        // update bone matrices
+        //_scene.updateBoneMatrices();
 
     }
 
     void transferCommands() {
         // called after the previous frames transfer commands have finished
 
+        _transfer_buffer.reset();
+
+        // update the node ubos
+        // _scene.updateNodeUBOs(_transfer_buffer);
+
         // update the camera matrices
-        float fov = 90;
-        float aspect_ratio = getWindow().getWidth() / float(getWindow().getHeight());
-        glm::mat4 cam_view = glm::mat4(1.0f);
-        glm::mat4 cam_proj = glm::perspective(glm::radians(fov), aspect_ratio, 0.1f, 1000.0f);
+        getWindow().setCursorEnabled(false);
+        _cam.update(getWindow());
+        glm::mat4 cam_view = _cam.getView();
+        glm::mat4 cam_proj = _cam.getProjection(100.0f, float(getWindow().getWidth()) / getWindow().getHeight());
 
         _renderer.loadCameraMatrices(glm::value_ptr(cam_view), glm::value_ptr(cam_proj), _transfer_buffer);
 
@@ -120,7 +139,7 @@ int main() {
     app.init();
 
     // main loop
-    while(app.run());
+    while(app.run() && !app.getWindow().isKeyPressed(GLFW_KEY_ESCAPE));
 
     app.cleanUp();
 

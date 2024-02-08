@@ -30,7 +30,7 @@ namespace undicht {
 
           public:
 
-            void init(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& node_descriptor_cache); // initializes the root node
+            void init(); // initializes the root node
             void cleanUp(); // but will call cleanUp() on all objects belonging to the group
 
             void setName(const std::string& name);
@@ -56,6 +56,9 @@ namespace undicht {
             // records the commands to generate the mip maps
 			// for all textures of the materials
             void genMipMaps(vulkan::CommandBuffer& cmd);
+			void updateNodeUBOs(vulkan::TransferBuffer& transfer_buffer);
+            void updateBoneMatrices();
+            void updateGlobalTransformation();
 
         };
 

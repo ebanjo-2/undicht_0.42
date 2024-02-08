@@ -5,6 +5,7 @@
 #include "file_tools.h"
 
 #include "cassert"
+#include "glm/gtc/type_ptr.hpp"
 
 namespace undicht {
 
@@ -47,13 +48,16 @@ namespace undicht {
             // loading the data from the assimp scene into the load_to scene
             processAssimpScene(assimp_scene, load_to, directory);
 
+            load_to.updateBoneMatrices();
+            load_to.updateNodeUBOs(*_transfer_buffer);
+
         }
 
         ///////////////////////////////// non public SceneLoader functions /////////////////////////////////
 
         const aiScene* SceneLoader::importAssimpScene(Assimp::Importer& importer, const std::string& file_name) const {
 
-            const aiScene *scene = importer.ReadFile(file_name, aiProcess_Triangulate | aiProcess_FlipUVs);	
+            const aiScene *scene = importer.ReadFile(file_name, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);	
             
             if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 
@@ -65,20 +69,21 @@ namespace undicht {
         }
 
         void SceneLoader::processAssimpScene(const aiScene* assimp_scene, SceneGroup& load_to, const std::string& directory) {
-            
-
-            // process all meshes
-            for(int i = 0; i < assimp_scene->mNumMeshes; i++) {
-
-                const aiMesh* ai_mesh = assimp_scene->mMeshes[i];
-                processAssimpMesh(ai_mesh, load_to.addMesh(ai_mesh->mName.C_Str()), (const aiMaterial**)assimp_scene->mMaterials);
-            }
 
             // process all materials
             for(int i = 0; i < assimp_scene->mNumMaterials; i++) {
 
                 const aiMaterial* ai_material = assimp_scene->mMaterials[i];
-                processAssimpMaterial(ai_material, load_to.addMaterial(ai_material->GetName().C_Str()), directory);
+                std::string mat_name = ai_material->GetName().C_Str(); // has to be unique (referenced by meshes)
+                if(!mat_name.length()) mat_name = "Material " + toStr(load_to.getMaterials().size()); 
+                processAssimpMaterial(ai_material, load_to.addMaterial(mat_name), directory);
+            }
+
+            // process all meshes
+            for(int i = 0; i < assimp_scene->mNumMeshes; i++) {
+
+                const aiMesh* ai_mesh = assimp_scene->mMeshes[i];
+                processAssimpMesh(ai_mesh, load_to.addMesh(ai_mesh->mName.C_Str()), load_to.getMaterials());
             }
 
             // process all nodes (recursive)
@@ -95,7 +100,7 @@ namespace undicht {
 
         //////////////////////////////////// functions to process meshes //////////////////////////////////////
 
-        void SceneLoader::processAssimpMesh(const aiMesh* assimp_mesh, Mesh& load_to, const aiMaterial** materials) {
+        void SceneLoader::processAssimpMesh(const aiMesh* assimp_mesh, Mesh& load_to, const std::vector<Material>& materials) {
             
             // init the mesh
             load_to.init(*_device, *_allocator);
@@ -108,7 +113,7 @@ namespace undicht {
             load_to.setVertexAttributes(assimp_mesh->HasPositions(), assimp_mesh->HasTextureCoords(0), assimp_mesh->HasNormals(), assimp_mesh->HasTangentsAndBitangents(), assimp_mesh->HasBones());
             load_to.setName(assimp_mesh->mName.C_Str());
             // load_to.setMaterialID(assimp_mesh->mMaterialIndex + material_id_offset);
-            load_to.setMaterial(materials[assimp_mesh->mMaterialIndex]->GetName().C_Str());
+            load_to.setMaterial(materials[assimp_mesh->mMaterialIndex].getName());
 
         }
 
@@ -127,7 +132,12 @@ namespace undicht {
                     processAssimpVec3(assimp_mesh->mTangents[i], vertex_data);
                     processAssimpVec3(assimp_mesh->mBitangents[i], vertex_data);
                 }
-                if(assimp_mesh->HasBones()) processAssimpVertexBones(assimp_mesh, i, vertex_data);
+                if(assimp_mesh->HasBones()) {
+                    std::vector<MeshBone> bones;
+                    storeMeshBones(assimp_mesh, bones);
+                    load_to.setBones(bones);
+                    processAssimpVertexBones(assimp_mesh, i, vertex_data);
+                }
 
             }
 
@@ -200,6 +210,31 @@ namespace undicht {
             load_to.push_back(assimp_vec.z);
         }
 
+        void SceneLoader::processAssimpMat4(const aiMatrix4x4& assimp_mat, glm::mat4& load_to) {
+
+            // access: glm::mat4[col][row]
+            load_to[0][0] = assimp_mat.a1; load_to[1][0] = assimp_mat.a2; load_to[2][0] = assimp_mat.a3; load_to[3][0] = assimp_mat.a4;
+            load_to[0][1] = assimp_mat.b1; load_to[1][1] = assimp_mat.b2; load_to[2][1] = assimp_mat.b3; load_to[3][1] = assimp_mat.b4;
+            load_to[0][2] = assimp_mat.c1; load_to[1][2] = assimp_mat.c2; load_to[2][2] = assimp_mat.c3; load_to[3][2] = assimp_mat.c4;
+            load_to[0][3] = assimp_mat.d1; load_to[1][3] = assimp_mat.d2; load_to[2][3] = assimp_mat.d3; load_to[3][3] = assimp_mat.d4;
+
+        }
+
+        void SceneLoader::storeMeshBones(const aiMesh* assimp_mesh, std::vector<MeshBone>& bones) {
+
+            for(int i = 0; i < assimp_mesh->mNumBones; i++) {
+                
+                MeshBone bone;
+                bone.setName(assimp_mesh->mBones[i]->mName.C_Str());
+                //bone.setOffsetMatrix(glm::make_mat4((float*)&assimp_mesh->mBones[i]->mOffsetMatrix));
+                glm::mat4 offset_mat; // = glm::transpose(glm::make_mat4((float*)&assimp_mesh->mBones[i]->mOffsetMatrix);
+                processAssimpMat4(assimp_mesh->mBones[i]->mOffsetMatrix, offset_mat);
+                bone.setOffsetMatrix(offset_mat);
+                bones.push_back(bone);
+            }
+
+        }
+
 		/////////////////////////////////////// functions to process Materials ///////////////////////////////////////
 
         void SceneLoader::processAssimpMaterial(const aiMaterial* assimp_material, Material& load_to, const std::string& directory) {
@@ -241,16 +276,30 @@ namespace undicht {
             for(int i = 0; i < assimp_node->mNumMeshes; i++) {
                 meshes.push_back(scene_meshes[assimp_node->mMeshes[i]]->mName.C_Str());
             }
-                
-            load_to.setMeshes(meshes);
+
+            if(meshes.size() == 1) {
+                if(!load_to.getHasVulkanObjects()) load_to.init(*_device, *_allocator, *_node_descriptor_cache);
+                load_to.setMesh(meshes[0]);
+            } else {
+                load_to.addMeshes(meshes, *_device, *_allocator, *_node_descriptor_cache);
+            }
 
             // store the model matrix
-            load_to.setModelMatrix((uint8_t*)&assimp_node->mTransformation, *_transfer_buffer);
+            //load_to.setLocalTransformation(glm::make_mat4((float*)&assimp_node->mTransformation));
+            glm::mat4 local;
+            processAssimpMat4(assimp_node->mTransformation, local);
+            load_to.setLocalTransformation(local);
 
             // recursivly processing the child nodes
             for(unsigned int i = 0; i < assimp_node->mNumChildren; i++) {
 
-                processAssimpNode(assimp_node->mChildren[i], load_to.addChildNode(assimp_node->mName.C_Str(), *_device, *_allocator, *_node_descriptor_cache), scene_meshes);
+                // if a mesh gets stored, the node will be reinitialized
+                // making sure that the node has a unique name
+                std::string node_name = assimp_node->mChildren[i]->mName.C_Str();
+                if(load_to.getChildNode(node_name)) { node_name = node_name + " " + toStr(i);}
+
+                processAssimpNode(assimp_node->mChildren[i], load_to.addChildNode(node_name), scene_meshes);
+
             }
 
         }

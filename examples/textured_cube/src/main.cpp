@@ -60,9 +60,9 @@ int main() {
     scene.init();
     SceneLoader scene_loader;
     scene_loader.setInitObjects(app.getDevice(), vulkan_allocator, transfer_buffer, renderer.getMaterialDescriptorCache(), renderer.getNodeDescriptorCache(), renderer.getMaterialSampler());
-    scene_loader.importScene("res/tex_cube.dae", scene.addGroup("cube", app.getDevice(), vulkan_allocator, renderer.getNodeDescriptorCache()));
-    //scene_loader.importScene("res/sponza_collada/sponza.dae", scene, transfer_buffer);
-    scene_loader.importScene("res/sponza/sponza.obj", scene.addGroup("sponza", app.getDevice(), vulkan_allocator, renderer.getNodeDescriptorCache()));
+    scene_loader.importScene("res/tex_cube.dae", scene.addGroup("cube"));
+    //scene_loader.importScene("res/sponza_collada/sponza.dae", scene.addGroup("sponza"));
+    scene_loader.importScene("res/sponza/sponza.obj", scene.addGroup("sponza"));
     //scene_loader.importScene("res/billiard/sphere.dae", scene, transfer_buffer, renderer.getMaterialDescriptorCache(), renderer.getNodeDescriptorCache(), renderer.getMaterialSampler(), app.getDevice(), vulkan_allocator);
 
     // matrices for the camera (updated every frame)

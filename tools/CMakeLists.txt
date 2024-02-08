@@ -27,6 +27,8 @@ add_library("tools"
 	src/3D/camera/camera_3d.cpp
 	src/3D/camera/perspective_camera_3d.h
 	src/3D/camera/perspective_camera_3d.cpp
+	src/3D/camera/free_camera.h
+	src/3D/camera/free_camera.cpp
 	
 	src/xml/xml_tag_attribute.h
 	src/xml/xml_tag_attribute.cpp
@@ -49,5 +51,5 @@ add_library("tools"
 )
 
 
-target_include_directories("tools" PUBLIC src extern/glm extern/assimp/include)
+target_include_directories("tools" PUBLIC src extern/assimp/include)
 target_link_libraries("tools" PUBLIC core graphics stb_image assimp)

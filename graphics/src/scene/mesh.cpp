@@ -62,11 +62,6 @@ namespace undicht {
             _has_bones = has_bones;
         }
 
-        /*void Mesh::setMaterialID(uint32_t material_id) {
-
-            _material_id = material_id;
-        }*/
-
         void Mesh::setName(const std::string& name) {
 
             _name = name;
@@ -75,6 +70,11 @@ namespace undicht {
         void Mesh::setMaterial(const std::string& material) {
 
             _material = material;
+        }
+
+        void Mesh::setBones(const std::vector<MeshBone>& bones) {
+
+            _bones = bones;
         }
 
         bool Mesh::getHasPositions() const {
@@ -107,11 +107,6 @@ namespace undicht {
             return _vertex_count;
         }
 
-        /*uint32_t Mesh::getMaterialID() const {
-
-            return _material_id;
-        }*/
-
         const std::string& Mesh::getName() const {
 
             return _name;
@@ -120,6 +115,26 @@ namespace undicht {
         const std::string& Mesh::getMaterial() const {
 
             return _material;
+        }
+
+        const std::vector<MeshBone>& Mesh::getBones() const {
+
+            return _bones;
+        }
+
+        int Mesh::getBoneID(const std::string& bone_name) const {
+            /// @return -1, if no bone with the name was found
+
+            for(int i = 0; i < _bones.size(); i++)
+                if(!_bones[i].getName().compare(bone_name))
+                    return i;
+
+            return -1;
+        }
+
+        const MeshBone& Mesh::getBone(int bone_id) const {
+
+            return _bones.at(bone_id);
         }
 
         const vulkan::Buffer& Mesh::getVertexBuffer() const {

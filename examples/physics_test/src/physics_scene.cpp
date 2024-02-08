@@ -60,7 +60,7 @@ void PhysicsScene::updatePhysics() {
 
 void PhysicsScene::updateGraphics(const LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, DescriptorSetCache& node_descriptor_cache, TransferBuffer& transfer_buffer) {
 
-    SceneGroup& scene_group = _graphics_scene.addGroup("physics", device, allocator, node_descriptor_cache);
+    SceneGroup& scene_group = _graphics_scene.addGroup("physics");
 
     // update the graphics scene to represent the physics scene
     for(int i = 0; i < _body_ids.size(); i++) {
@@ -75,10 +75,10 @@ void PhysicsScene::updateGraphics(const LogicalDevice& device, vma::VulkanMemory
         // choose the correct mesh and size for the body
         if(_body_interface->GetShape(_body_ids.at(i)).GetPtr()->GetSubType() == EShapeSubType::Sphere) {
 
-            scene_group.getRootNode().getChildNode(node_name)->setMeshes({"Sphere-mesh"}); // should be the sphere mesh
+            scene_group.getRootNode().getChildNode(node_name)->setMesh("Sphere-mesh"); // should be the sphere mesh
         } else if(_body_interface->GetShape(_body_ids.at(i)).GetPtr()->GetSubType() == EShapeSubType::Box) {
 
-            scene_group.getRootNode().getChildNode(node_name)->setMeshes({"Cube-mesh"}); // should be the cube mesh
+            scene_group.getRootNode().getChildNode(node_name)->setMesh("Cube-mesh"); // should be the cube mesh
         } else {
 
             UND_WARNING << "unknown physics shape cant be represented\n";
@@ -93,7 +93,8 @@ void PhysicsScene::updateGraphics(const LogicalDevice& device, vma::VulkanMemory
         glm::quat rotation(jph_rotation.GetW(), jph_rotation.GetX(), jph_rotation.GetY(), jph_rotation.GetZ());
         glm::mat4 model_matrix = glm::translate(position) * glm::toMat4(rotation) * glm::scale(_body_half_sizes.at(i));
 
-        scene_group.getRootNode().getChildNode(node_name)->setModelMatrix((uint8_t*)glm::value_ptr(model_matrix), transfer_buffer);
+        scene_group.getRootNode().getChildNode(node_name)->setLocalTransformation(model_matrix);
+        scene_group.getRootNode().getChildNode(node_name)->updateUniformBuffer(transfer_buffer);
     }
 
 }
@@ -169,8 +170,8 @@ void PhysicsScene::initGraphics(const undicht::vulkan::LogicalDevice& device, un
     // init scene meshes + textures
     SceneLoader scene_loader;
     scene_loader.setInitObjects(device, allocator, transfer_buffer, material_descriptor_cache, node_descriptor_cache, sampler);
-    scene_loader.importScene("res/sphere.dae", _graphics_scene.addGroup("physics", device, allocator, node_descriptor_cache));
-    scene_loader.importScene("res/cube.dae", _graphics_scene.addGroup("physics", device, allocator, node_descriptor_cache));
+    scene_loader.importScene("res/sphere.dae", _graphics_scene.addGroup("physics"));
+    scene_loader.importScene("res/cube.dae", _graphics_scene.addGroup("physics"));
 
     // upload data
     transfer_command.beginCommandBuffer(true);

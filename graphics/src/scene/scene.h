@@ -4,6 +4,7 @@
 #include "vulkan_memory_allocator.h"
 #include "core/vulkan/logical_device.h"
 #include "renderer/vulkan/descriptor_set_cache.h"
+#include "renderer/vulkan/transfer_buffer.h"
 
 #include "scene_group.h"
 
@@ -16,6 +17,7 @@ namespace undicht {
 		class Scene {
 
 		  protected:
+
 		  	std::vector<SceneGroup> _groups;
 			
 		  public:
@@ -23,7 +25,7 @@ namespace undicht {
 			void init();
 			void cleanUp();
 
-			SceneGroup& addGroup(const std::string& group_name, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& node_descriptor_cache); // calls init() on a newly created group
+			SceneGroup& addGroup(const std::string& group_name); // calls init() on a newly created group
 			Mesh* addMesh(const std::string& group_name, const std::string& mesh_name); // returns nullptr, if the group doesnt exist
 			Material* addMaterial(const std::string& group_name, const std::string& mat_name);
 			Animation* addAnimation(const std::string& group_name, const std::string& anim_name);
@@ -38,6 +40,9 @@ namespace undicht {
 			// records the commands to generate the mip maps
 			// for all textures of the materials
             void genMipMaps(vulkan::CommandBuffer& cmd);
+			void updateNodeUBOs(vulkan::TransferBuffer& transfer_buffer);
+            void updateBoneMatrices();
+            void updateGlobalTransformation();
 
 		};
 

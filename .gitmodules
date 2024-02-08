@@ -13,6 +13,6 @@
 [submodule "physics/extern/JoltPhysics"]
 	path = physics/extern/JoltPhysics
 	url = https://github.com/jrouwe/JoltPhysics.git
-[submodule "tools/extern/glm"]
-	path = tools/extern/glm
-	url = https://github.com/g-truc/glm.git
+[submodule "graphics/extern/glm"]
+	path = graphics/extern/glm
+	url = https://github.com/icaven/glm.git
