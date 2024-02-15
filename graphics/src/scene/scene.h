@@ -42,7 +42,7 @@ namespace undicht {
             void genMipMaps(vulkan::CommandBuffer& cmd);
 			void updateNodeUBOs(vulkan::TransferBuffer& transfer_buffer);
             void updateBoneMatrices();
-            void updateGlobalTransformation();
+            void updateGlobalTransformations();
 
 		};
 

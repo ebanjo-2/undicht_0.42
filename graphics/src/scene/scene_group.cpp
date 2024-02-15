@@ -59,25 +59,39 @@ namespace undicht {
 
             return _animations.back();
         }
+
+        Skeleton& SceneGroup::addSkeleton(const std::string& skel_name) {
+
+            _skeletons.emplace_back(Skeleton());
+            _skeletons.back().setName(skel_name);
+
+            return _skeletons.back();
+        }
+
             
         Node& SceneGroup::getRootNode() {
 
             return _root_node;
         }
 
-        const std::vector<Mesh>& SceneGroup::getMeshes() const {
+        std::vector<Mesh>& SceneGroup::getMeshes() {
 
             return _meshes;
         }
 
-		const std::vector<Material>& SceneGroup::getMaterials() const {
+		std::vector<Material>& SceneGroup::getMaterials() {
 
             return _materials;
         }
 
-		const std::vector<Animation>& SceneGroup::getAnimations() const {
+		std::vector<Animation>& SceneGroup::getAnimations() {
 
             return _animations;
+        }
+
+		std::vector<Skeleton>& SceneGroup::getSkeletons() {
+
+            return _skeletons;
         }
 
         Mesh* SceneGroup::getMesh(const std::string& mesh_name) {
@@ -109,6 +123,26 @@ namespace undicht {
             return nullptr;
         }
 
+        Skeleton* SceneGroup::getSkeleton(const std::string& skel_name) {
+            
+            for(Skeleton& s : _skeletons) 
+                if(!s.getName().compare(skel_name))
+                    return &s;
+
+            return nullptr;
+        }
+
+        Bone* SceneGroup::getBone(const std::string& bone_name) {
+            // bone names should be unique across all skeletons
+
+            for(Skeleton& s : _skeletons) {
+                Bone* b = s.findBone(bone_name);
+                if(b) return b;
+            }
+
+            return nullptr;
+        } 
+
         void SceneGroup::genMipMaps(vulkan::CommandBuffer& cmd) {
             // records the commands to generate the mip maps
 
@@ -119,15 +153,17 @@ namespace undicht {
 
 		void SceneGroup::updateNodeUBOs(vulkan::TransferBuffer& transfer_buffer) {
 
-            _root_node.updateUniformBuffer(transfer_buffer);
+            _root_node.updateUniformBuffer(transfer_buffer, *this);
         }
 
 		void SceneGroup::updateBoneMatrices() {
 
-            _root_node.updateBoneMatrices(_root_node, _meshes);
+            for(Skeleton& s : _skeletons)
+                s.updateBoneMatrices();
+            
         }
 
-        void SceneGroup::updateGlobalTransformation() {
+        void SceneGroup::updateGlobalTransformations() {
 
             _root_node.updateGlobalTransformation(glm::mat4(1.0f));
         }

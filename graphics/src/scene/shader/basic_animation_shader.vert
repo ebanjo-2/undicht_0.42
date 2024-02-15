@@ -31,7 +31,7 @@ void main() {
 	for(int i = 0; i < MAX_BONES_PER_VERTEX; i++)
 		bone_to_bind_pose += node.bones[aBoneIDs[i]] * aBoneWeights[i];
 
-	mat4 model = /*node.model; // */ bone_to_bind_pose;
+	mat4 model = node.model * bone_to_bind_pose;
 
 	// calculate the outputs to the fragment shader
     uv = aUV.xy;

@@ -6,6 +6,7 @@
 #include "material.h"
 #include "node.h"
 #include "animation.h"
+#include "skeleton.h"
 
 #include "vector"
 #include "string"
@@ -25,6 +26,7 @@ namespace undicht {
 			std::vector<Mesh> _meshes;
 			std::vector<Material> _materials;
 			std::vector<Animation> _animations;
+            std::vector<Skeleton> _skeletons; // spooky & scary
 
 			Node _root_node; // contains child nodes
 
@@ -41,24 +43,28 @@ namespace undicht {
             Mesh& addMesh(const std::string& mesh_name);
             Material& addMaterial(const std::string& mat_name);
             Animation& addAnimation(const std::string& anim_name);
+            Skeleton& addSkeleton(const std::string& skel_name);
             
             Node& getRootNode();
-            const std::vector<Mesh>& getMeshes() const;
-			const std::vector<Material>& getMaterials() const;
-			const std::vector<Animation>& getAnimations() const;
+            std::vector<Mesh>& getMeshes();
+			std::vector<Material>& getMaterials();
+			std::vector<Animation>& getAnimations();
+			std::vector<Skeleton>& getSkeletons();
 
             /** @brief tries to find a mesh with the given name
              * @return nullptr, if no mesh with a matching mesh_name could be found */
             Mesh* getMesh(const std::string& mesh_name);
             Material* getMaterial(const std::string& mat_name);
             Animation* getAnimation(const std::string& anim_name);
+            Skeleton* getSkeleton(const std::string& skel_name);
+            Bone* getBone(const std::string& bone_name); // bone names should be unique across all skeletons
 
             // records the commands to generate the mip maps
 			// for all textures of the materials
             void genMipMaps(vulkan::CommandBuffer& cmd);
 			void updateNodeUBOs(vulkan::TransferBuffer& transfer_buffer);
             void updateBoneMatrices();
-            void updateGlobalTransformation();
+            void updateGlobalTransformations();
 
         };
 

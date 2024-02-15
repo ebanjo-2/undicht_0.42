@@ -7,6 +7,8 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
+#include "scene_group.h"
+
 namespace undicht {
 
     namespace graphics {
@@ -17,7 +19,6 @@ namespace undicht {
             // init without vulkan objects
 
             _local_transformation = glm::mat4(1.0f);
-            _parent_transformation = glm::mat4(1.0f);
         } 
 
         void Node::init(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& descriptor_cache) {
@@ -26,7 +27,6 @@ namespace undicht {
             _has_vulkan_objects = true;
 
             // ubo to hold the model matrix for this node
-            // (transformation from the model to the global coordinate system)
             //  + transformation matrices for the bones
             // i think i should use a storage buffer?
             std::vector<FixedType> types(1 + MAX_BONES_PER_NODE, UND_MAT4F); // model transformation matrix + bone matrices
@@ -144,21 +144,20 @@ namespace undicht {
         }
 
         void Node::setLocalTransformation(const glm::mat4& transformation) {
-            /// set the transformation from the local coordinate system to the parents
-            /// also updates the global transformation (including its children)
+            /// set the transformation of the nodes local coord. system
+            /// relative to its parents
 
             _local_transformation = transformation;
-
-            updateGlobalTransformation(_parent_transformation);
         }
 
         void Node::updateGlobalTransformation(const glm::mat4& parent_transformation) {
-            /// updates the transformation from local space to global space
-            /// recursivly calls the function for all its children
+            /// calculates the transformation of the local coord. system rel. to the global coord. system
+            /// updates the children nodes as well
 
-            _parent_transformation = parent_transformation;
-            //_global_transformation = _local_transformation * parent_transformation;
-            _global_transformation = parent_transformation * _local_transformation; // this one *should* be it
+            // transformation of parent coord. system from global
+            // * transf. of local system from parent system
+            // = transformation of local system from global
+            _global_transformation = parent_transformation * _local_transformation;
 
             // updating the child nodes global transformation
             for(Node& n : _child_nodes)
@@ -177,93 +176,7 @@ namespace undicht {
             return out;
         }
 
-        void Node::updateBoneMatrices(Node& skeletal_hierarchy, const std::vector<Mesh>& meshes) {
-            /// updates the bone transformation matrices to accuratly represent their current position
-            /// only one mesh with animation allowed per node
-            /// the skeletal_hierarchy (all bones used in the animation) must be children of this node
-            /// @param meshes must contain the mesh used by the node for animation
-
-            // retrieving the mesh used in the animation
-            const Mesh* mesh = nullptr;
-
-            if(_mesh.length()) {
-                for(const Mesh& m : meshes) {
-                    if(!m.getName().compare(_mesh)) {
-                        mesh = &m;
-                        break;
-                    }   
-                }
-            }
-
-
-            if(mesh && mesh->getHasBones()) {
-
-                UND_LOG << "updating the bone matrices for mesh " << _mesh << "\n";
-
-                // updating the matrices for each bone used by the mesh
-                _bone_matrices.resize(mesh->getBones().size());
-
-               /*const MeshBone& bone = mesh->getBone(0);
-                const Node* bone_node = skeletal_hierarchy.getChildNode(bone.getName(), true);
-
-                if(!bone_node) {
-                    UND_ERROR << "bone node " << bone.getName() << " was not found\n";
-                    return;
-                }
-
-                // bind_pose_mesh_to_bone
-                // current_bone_to_global
-
-                _bone_matrices[0] = bone_node->getLocalTransformation();
-                //_bone_matrices[0] = bone.getOffsetMatrix() * bone_node->getGlobalTransformation() ;
-                //_bone_matrices[0] = bone_node->getGlobalTransformation() * glm::inverse(bone_node->getGlobalTransformation());
-
-                UND_LOG << "processing bone: " << bone.getName() << "\n";
-                UND_LOG << "bone to global: " << "\n";
-
-                //glm::mat4 print_matrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 5.0f, -10.0f));
-
-                glm::mat4 print_matrix = _bone_matrices[0];
-                //glm::mat4 print_matrix = bone_node->getLocalTransformation();
-                //glm::mat4 print_matrix = bone_node->getGlobalTransformation();
-                //glm::mat4 print_matrix = bone.getOffsetMatrix();
-                //glm::mat4 print_matrix = global_to_node;
-
-
-                */
-
-                for(int i = 0; i < mesh->getBones().size(); i++) {
-
-                    const MeshBone& bone = mesh->getBone(i);
-                    const Node* bone_node = skeletal_hierarchy.getChildNode(bone.getName(), true);
-                    
-                    if(bone_node) {
-
-                        // bone_to_mesh * mesh_to_bind_pose = bone_to_bind_pose
-                        //_bone_matrices[i] = bone_node->getLocalTransformation();
-                        _bone_matrices[i] = bone_node->getGlobalTransformation() * bone.getOffsetMatrix(); // this one *should* be it
-                        //_bone_matrices[i] = bone.getOffsetMatrix() * bone_node->getGlobalTransformation();
-
-                        UND_LOG << "bone " << bone.getName() << "\n";
-                        std::cout << _bone_matrices[i] << "\n";
-
-                    } else {
-                        // no bone found, using the identity matrix
-                        UND_ERROR << "failed to find bone node: " << bone.getName() << "\n";
-                        _bone_matrices[i] = glm::mat4(1.0f);
-                    }
-                    //_bone_matrices[i] = glm::mat4(0.0f);
-
-                }
-
-            }
-
-            // recursivly updating the child nodes as well
-            for(Node& n : _child_nodes)
-                n.updateBoneMatrices(skeletal_hierarchy, meshes);
-
-        }
-
+    
         const glm::mat4& Node::getLocalTransformation() const {
 
             return _local_transformation;
@@ -274,25 +187,37 @@ namespace undicht {
             return _global_transformation;
         }
 
-        void Node::updateUniformBuffer(vulkan::TransferBuffer& transfer_buffer) {
-
-            if(_bone_matrices.size() > MAX_BONES_PER_NODE)
-                UND_WARNING << "provided number of Bone Matrices cant be stored, expect animation glitches\n";
-
-            if(_has_vulkan_objects) {
-            
-                // upload the model matrix to the ubo
-                _ubo.uploadData(0, (const uint8_t*)glm::value_ptr(_global_transformation), transfer_buffer);
-
-                // upload the bone matrices
-                for(int i = 0; i < std::min(_bone_matrices.size(), MAX_BONES_PER_NODE); i++)
-                    _ubo.uploadData(i + 1, (const uint8_t*)glm::value_ptr(_bone_matrices[i]), transfer_buffer);
-
-            }
+        void Node::updateUniformBuffer(vulkan::TransferBuffer& transfer_buffer, SceneGroup& scene_group) {
 
             // updating the child nodes uniform buffers
             for(Node& n : _child_nodes)
-                n.updateUniformBuffer(transfer_buffer);
+                n.updateUniformBuffer(transfer_buffer, scene_group);
+
+            // updating this nodes uniform buffer
+            if(!_has_vulkan_objects) return;
+            Mesh* mesh = scene_group.getMesh(_mesh);
+            if(!mesh) return;
+
+            // get the bone matrices from the skeletons
+            std::vector<glm::mat4> bone_matrices;
+            for(const std::string& bone_name : mesh->getBones()) {
+                Bone* b = scene_group.getBone(bone_name);
+                if(b)bone_matrices.push_back(b->getBoneMatrix());
+                else UND_ERROR << "failed to update bone: " << bone_name << "\n";
+            }
+
+            // UND_LOG << "updating " << bone_matrices.size() << " bone matrices\n";
+
+            if(bone_matrices.size() > MAX_BONES_PER_NODE)
+                UND_WARNING << "provided number of Bone Matrices cant be stored, expect animation glitches\n";
+
+            // upload the model matrix to the ubo
+            _ubo.uploadData(0, (const uint8_t*)glm::value_ptr(_global_transformation), transfer_buffer);
+
+            // upload the bone matrices
+            for(int i = 0; i < std::min(bone_matrices.size(), MAX_BONES_PER_NODE); i++)
+                _ubo.uploadData(i + 1, (const uint8_t*)glm::value_ptr(bone_matrices[i]), transfer_buffer);
+
         }
 
         const vulkan::UniformBuffer& Node::getUbo() const {

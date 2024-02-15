@@ -115,10 +115,10 @@ namespace undicht {
 
         }
 
-        void Scene::updateGlobalTransformation() {
+        void Scene::updateGlobalTransformations() {
 
             for(SceneGroup& g : _groups)
-                g.updateGlobalTransformation();
+                g.updateGlobalTransformations();
 
         }
 

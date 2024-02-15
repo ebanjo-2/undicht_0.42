@@ -46,20 +46,20 @@ class AnimationTest : public BasicAppTemplate {
         // the model.dae file (and diffuse texture) are taken from the ThinMatrix tutorial github:
         // https://github.com/TheThinMatrix/OpenGL-Animation
         loader.importScene("res/model.dae", _scene.addGroup("animation"));
-        //loader.importScene("res/bob/boblampclean.md5mesh", _scene.addGroup("animation"));
+        loader.importScene("res/bob/boblampclean.md5mesh", _scene.addGroup("bob_lamp"));
         loader.importScene("res/tex_cube.dae", _scene.addGroup("cube"));
         _transfer_buffer.completeTransfers(_load_cmd_buffer);
         _transfer_buffer.reset();
         _scene.genMipMaps(_load_cmd_buffer);
 
-        // move and rotate the model to get a better look
-        glm::mat4 model_mat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 5.0f, -10.0f));
-        //model_mat = glm::rotate(model_mat, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        //model_mat = glm::rotate(model_mat, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        /*glm::mat4 model_mat = glm::mat4(1.0f);*/
 
-        //for(SceneGroup& s : _scene.getGroups())
-        //    s.getRootNode().setLocalTransformation(model_mat);
+        // move and rotate the model to get a better look
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0f));
+        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+        _scene.getGroup("animation")->getRootNode().setLocalTransformation(model);
 
         _transfer_buffer.completeTransfers(_load_cmd_buffer);
         _transfer_buffer.reset();
@@ -83,11 +83,12 @@ class AnimationTest : public BasicAppTemplate {
         // called before the old frame is finished on the gpu
         
         // animations
-        //Node* bone = _scene.getGroup("animation")->getRootNode().getChildNode("Torso", true);
-        //bone->setLocalTransformation(glm::translate(glm::mat4(1.0f), glm::vec3(0,0,0)));
+        //Bone* bone = _scene.getGroup("animation")->getBone("Head");
+        //bone->setLocalMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0,-1,0)));
 
         // update bone matrices
-        //_scene.updateBoneMatrices();
+        _scene.updateBoneMatrices();
+        _scene.updateGlobalTransformations();
 
     }
 
@@ -97,7 +98,7 @@ class AnimationTest : public BasicAppTemplate {
         _transfer_buffer.reset();
 
         // update the node ubos
-        // _scene.updateNodeUBOs(_transfer_buffer);
+        _scene.updateNodeUBOs(_transfer_buffer);
 
         // update the camera matrices
         getWindow().setCursorEnabled(false);

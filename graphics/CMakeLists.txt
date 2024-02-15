@@ -122,6 +122,12 @@ set(GRAPHICS_SCENE_SOURCES
     
     src/scene/node_animation.h
     src/scene/node_animation.cpp
+
+    src/scene/bone.h
+    src/scene/bone.cpp
+    
+    src/scene/skeleton.h
+    src/scene/skeleton.cpp
     
     src/scene/renderer/scene_renderer.h
     src/scene/renderer/scene_renderer.cpp

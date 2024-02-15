@@ -7,9 +7,11 @@
 #include "scene/material.h"
 #include "scene/node.h"
 #include "scene/animation.h"
+#include "scene/skeleton.h"
 
 #include "string"
 #include "vector"
+#include "set"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -31,6 +33,9 @@ namespace undicht {
             const vulkan::Sampler* _sampler = nullptr;
             vma::VulkanMemoryAllocator* _allocator = nullptr;
 
+            // storing the names of bones referenced by meshes
+            // to identify and seperate normal nodes from bone nodes
+            std::set<std::string> _bone_names;
 
           public:
 
@@ -50,17 +55,18 @@ namespace undicht {
             void processAssimpMesh(const aiMesh* assimp_mesh, graphics::Mesh& load_to, const std::vector<graphics::Material>& materials);
             void processAssimpVertices(const aiMesh* assimp_mesh, graphics::Mesh& load_to);        
             void processAssimpFaces(const aiMesh* assimp_mesh, graphics::Mesh& load_to);
+            void processAssimpMeshBones(const aiMesh* assimp_mesh, graphics::Mesh& load_to);
             void processAssimpVertexBones(const aiMesh* assimp_mesh, int vertex_id, std::vector<ai_real>& load_to);
             void processAssimpVec3(const aiVector3D& assimp_vec, std::vector<ai_real>& load_to);
             void processAssimpMat4(const aiMatrix4x4& assimp_mat, glm::mat4& load_to);
-            void storeMeshBones(const aiMesh* assimp_mesh, std::vector<graphics::MeshBone>& bones);
 
             // functions to process materials
             void processAssimpMaterial(const aiMaterial* assimp_material, graphics::Material& load_to, const std::string& directory);
 
             // functions to process nodes
-            void processAssimpNode(const aiNode* assimp_node, graphics::Node& load_to, const aiMesh** scene_meshes);
-            
+            void processAssimpNode(const aiNode* assimp_node, graphics::Node& load_to, graphics::SceneGroup& scene_group);
+            void processAssimpBoneNode(const aiNode* assimp_node, graphics::Bone& load_to);
+
             // functions to process animations
             void processAssimpAnimation(const aiAnimation* assimp_animation, graphics::Animation& load_to);
 

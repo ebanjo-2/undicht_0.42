@@ -16,6 +16,8 @@ namespace undicht {
 
     namespace graphics {
 
+        class SceneGroup; // node.h gets included by scene_group.h
+
         class Node {
         
           protected:
@@ -26,10 +28,8 @@ namespace undicht {
             // attributes of the Node
             std::string _name;
             std::string _mesh; // one mesh per node
-            glm::mat4 _local_transformation; // transformation from local to parent coordinate system
-            glm::mat4 _parent_transformation; // transformation from parent to global coordinate system
-            glm::mat4 _global_transformation; // transformation from local to global coordinate system
-            std::vector<glm::mat4> _bone_matrices;
+            glm::mat4 _local_transformation; // transformation of local coord. system rel. to parent
+            glm::mat4 _global_transformation; // transformation of local coord. system rel. to global system
 
             // vulkan objects
             bool _has_vulkan_objects = false;
@@ -57,23 +57,17 @@ namespace undicht {
             void addMeshes(const std::vector<std::string>& meshes, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& descriptor_cache);
             const std::string& getMesh() const;
 
-            /// set the transformation from the local coordinate system to the parents
-            /// also updates the global transformation (including its children)
+            /// set the transformation of the nodes local coord. system
+            /// relative to its parents
             void setLocalTransformation(const glm::mat4& transformation);
-            /// updates the transformation from local space to global space
-            /// recursivly calls the function for all its children
+            /// calculates the transformation of the local coord. system rel. to the global coord. system
+            /// updates the children nodes as well
             void updateGlobalTransformation(const glm::mat4& parent_transformation);
-
-            /// updates the bone transformation matrices to accuratly represent their current position
-            /// only one mesh with animation allowed per node
-            /// the skeletal_hierarchy (all bones used in the animation) must be children of this node
-            /// @param meshes must contain the mesh used by the node for animation
-            void updateBoneMatrices(Node& skeletal_hierarchy, const std::vector<Mesh>& meshes);
 
             const glm::mat4& getLocalTransformation() const;
             const glm::mat4& getGlobalTransformation() const;
             
-            void updateUniformBuffer(vulkan::TransferBuffer& transfer_buffer);
+            void updateUniformBuffer(vulkan::TransferBuffer& transfer_buffer, SceneGroup& scene_group);
             
             const vulkan::UniformBuffer& getUbo() const;
             const vulkan::DescriptorSet& getDescriptorSet() const;

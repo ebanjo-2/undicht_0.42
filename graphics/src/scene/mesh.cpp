@@ -72,7 +72,7 @@ namespace undicht {
             _material = material;
         }
 
-        void Mesh::setBones(const std::vector<MeshBone>& bones) {
+        void Mesh::setBones(const std::vector<std::string>& bones) {
 
             _bones = bones;
         }
@@ -117,7 +117,7 @@ namespace undicht {
             return _material;
         }
 
-        const std::vector<MeshBone>& Mesh::getBones() const {
+        const std::vector<std::string>& Mesh::getBones() const {
 
             return _bones;
         }
@@ -126,13 +126,13 @@ namespace undicht {
             /// @return -1, if no bone with the name was found
 
             for(int i = 0; i < _bones.size(); i++)
-                if(!_bones[i].getName().compare(bone_name))
+                if(!_bones[i].compare(bone_name))
                     return i;
 
             return -1;
         }
 
-        const MeshBone& Mesh::getBone(int bone_id) const {
+        const std::string& Mesh::getBone(int bone_id) const {
 
             return _bones.at(bone_id);
         }
