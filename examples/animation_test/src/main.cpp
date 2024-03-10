@@ -32,7 +32,7 @@ class AnimationTest : public BasicAppTemplate {
 
         BasicAppTemplate::init("Animation Test", VK_PRESENT_MODE_FIFO_KHR);
         getWindow().setSize(1000, 800);
-        //setClearColor({0.01f, 0.0005f, 0.002f, 0.0f});
+        setClearColor({0.01f, 0.0005f, 0.002f, 0.0f});
 
         _load_cmd_buffer.init(getDevice().getDevice(), getDevice().getGraphicsCmdPool());
         _load_cmd_buffer.beginCommandBuffer(true);
@@ -83,8 +83,8 @@ class AnimationTest : public BasicAppTemplate {
         // called before the old frame is finished on the gpu
         
         // animations
-        //Bone* bone = _scene.getGroup("animation")->getBone("Head");
-        //bone->setLocalMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0,-1,0)));
+        Bone* bone = _scene.getGroup("animation")->getBone("Head");
+        bone->setLocalMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0,-1,0)));
 
         // update bone matrices
         _scene.updateBoneMatrices();

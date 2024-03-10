@@ -19,7 +19,8 @@ int main() {
     // initializing the engine and opening a window
     Application app;
     app.init("Hello Triangle!", VK_PRESENT_MODE_FIFO_KHR);
-
+    app.getWindow().setSize(800, 600);
+        
     // setting up the render pass
     RenderPass render_pass;
     render_pass.addAttachment(app.getSwapChain().getSwapImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);

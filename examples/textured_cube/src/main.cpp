@@ -1,18 +1,6 @@
 #include "debug.h"
 #include "engine.h"
-#include "application.h"
-#include "frame_manager.h"
-
-#include "core/vulkan/frame_buffer.h"
-#include "core/vulkan/render_pass.h"
-#include "core/vulkan/pipeline.h"
-#include "core/vulkan/shader_module.h"
-#include "core/vulkan/command_buffer.h"
-#include "core/vulkan/fence.h"
-#include "core/vulkan/semaphore.h"
-#include "core/vulkan/buffer.h"
-
-#include "vulkan_memory_allocator.h"
+#include "application_templates/basic_app_template.h"
 
 #include "scene/scene.h"
 #include "scene_loader/scene_loader.h"
@@ -29,139 +17,90 @@ using namespace graphics;
 using namespace vulkan;
 using namespace tools;
 
-int main() {
+class App : public BasicAppTemplate {
 
-    // initializing the engine and opening a window
-    Application app;
-    app.init("Textured cube", VK_PRESENT_MODE_IMMEDIATE_KHR);
-    //app.init("Textured cube", VK_PRESENT_MODE_FIFO_KHR);
-    Profiler::enableProfiler(true);
+  protected:
 
-    UND_LOG << "initialized the app\n";
-    
-    // setting up the vulkan memory allocator
-    vma::VulkanMemoryAllocator vulkan_allocator;
-    vulkan_allocator.init(app.getVulkanInstance().getInstance(), app.getDevice().getDevice(), app.getDevice().getPhysicalDevice());
-
-    // setting up the renderer
     SceneRenderer renderer;
-    renderer.init(app.getDevice(), app.getSwapChain(), vulkan_allocator);
-
-    // buffer and command buffer for loading data
-    CommandBuffer transfer_command;
-    transfer_command.init(app.getDevice().getDevice(), app.getDevice().getGraphicsCmdPool());
     TransferBuffer transfer_buffer;
-    transfer_buffer.init(vulkan_allocator, {app.getDevice().getGraphicsQueueFamily()}, 50000000 * sizeof(float));
-    Fence transfer_finished;
-    transfer_finished.init(app.getDevice().getDevice(), false);
-
-    // loading the cube model using assimp
     Scene scene;
-    scene.init();
-    SceneLoader scene_loader;
-    scene_loader.setInitObjects(app.getDevice(), vulkan_allocator, transfer_buffer, renderer.getMaterialDescriptorCache(), renderer.getNodeDescriptorCache(), renderer.getMaterialSampler());
-    scene_loader.importScene("res/tex_cube.dae", scene.addGroup("cube"));
-    //scene_loader.importScene("res/sponza_collada/sponza.dae", scene.addGroup("sponza"));
-    scene_loader.importScene("res/sponza/sponza.obj", scene.addGroup("sponza"));
-    //scene_loader.importScene("res/billiard/sphere.dae", scene, transfer_buffer, renderer.getMaterialDescriptorCache(), renderer.getNodeDescriptorCache(), renderer.getMaterialSampler(), app.getDevice(), vulkan_allocator);
 
-    // matrices for the camera (updated every frame)
+    // camera matrices
     glm::mat4 camera_view;
     glm::mat4 camera_proj;
     float rotation = 0.0f;
 
-    // submit the transfer command
-    transfer_command.beginCommandBuffer(true);
-    transfer_buffer.completeTransfers(transfer_command);
-    transfer_command.endCommandBuffer();
-    app.getDevice().submitOnGraphicsQueue(transfer_command.getCommandBuffer(), transfer_finished.getFence());
-    transfer_finished.waitForProcessToFinish();
-
-    UND_LOG << "transfered all the data\n";
-
-    // generate mip maps (reusing the transfer command buffer)
-    transfer_command.beginCommandBuffer(true);
-    scene.genMipMaps(transfer_command);
-    transfer_command.endCommandBuffer();
-    app.getDevice().submitOnGraphicsQueue(transfer_command.getCommandBuffer(), transfer_finished.getFence());
-    transfer_finished.waitForProcessToFinish();
-
-    UND_LOG << "generated all the mip maps\n";
-
+    // frame profiling
     uint32_t last_fps_millis = millis();
     uint32_t last_frame_micros = micros();
     uint32_t num_frames_since_fps = 0;
 
-    FrameManager frames;
-    frames.init(app.getDevice());
+  public:
 
-    // render loop
-    while(!app.getWindow().shouldClose()) {
+    void init() {
 
-        Profiler main_loop("main loop");
+        //BasicAppTemplate::init("Textured Cube", VK_PRESENT_MODE_FIFO_KHR); // vsync
+        BasicAppTemplate::init("Textured Cube", VK_PRESENT_MODE_IMMEDIATE_KHR); // no vsync
+        getWindow().setSize(1000, 800);
+        setClearColor({0.01f, 0.0005f, 0.002f, 0.0f});
+        Profiler::enableProfiler(true);
+
+        UND_LOG << "initialized the app\n";
+
+        // setting up the renderer
+        renderer.init(getDevice(), _swap_chain, _vulkan_allocator);
+
+        // setting up the transfer buffer
+        transfer_buffer.init(_vulkan_allocator, {getDevice().getGraphicsQueueFamily()}, 50000000 * sizeof(float));
+
+        scene.init();
+        SceneLoader scene_loader;
+        scene_loader.setInitObjects(getDevice(), _vulkan_allocator, transfer_buffer, renderer.getMaterialDescriptorCache(), renderer.getNodeDescriptorCache(), renderer.getMaterialSampler());
+        scene_loader.importScene("res/tex_cube.dae", scene.addGroup("cube"));
+        scene_loader.importScene("res/sponza/sponza.obj", scene.addGroup("sponza"));
+        
+        // transferring the scene data
+        CommandBuffer initial_transfer_cmd;
+        initial_transfer_cmd.init(getDevice().getDevice(), getDevice().getGraphicsCmdPool());
+
+        initial_transfer_cmd.beginCommandBuffer(true);
+        transfer_buffer.completeTransfers(initial_transfer_cmd);
+        transfer_buffer.reset();
+        scene.genMipMaps(initial_transfer_cmd);
+        initial_transfer_cmd.endCommandBuffer();
+
+        getDevice().submitOnGraphicsQueue(initial_transfer_cmd.getCommandBuffer());
+        getDevice().waitForProcessesToFinish();
+        initial_transfer_cmd.cleanUp();
+    }
+
+    void cleanUp() {
+
+        getDevice().waitForProcessesToFinish();
+
+        transfer_buffer.cleanUp();
+        renderer.cleanUp(_swap_chain);
+        scene.cleanUp();
+        BasicAppTemplate::cleanUp();
+    }
+
+    void recreateSwapChain() {
+
+        BasicAppTemplate::recreateSwapChain();
+        renderer.recreateFramebuffers(_vulkan_allocator, getSwapChain());
+        
+    }
+
+    void framePreperation() {
+        // called while the old frame is still being processed on the gpu
 
         // update the camera rotation
         rotation += (micros() - last_frame_micros) / 3000000.0f;
         last_frame_micros = micros();
 
-        // acquire next swapchain image
-        int image_id = frames.prepareNextFrame(app.getSwapChain());
-
-        if(image_id != -1) {
-
-            // record draw command
-            if(!frames.getDrawCmd().isReady()) {
-                PROFILE_SCOPE("recording command buffer",
-                frames.getDrawCmd().resetCommandBuffer();
-                frames.getDrawCmd().beginCommandBuffer(false);
-                renderer.begin(frames.getDrawCmd(), image_id);
-                renderer.draw(frames.getDrawCmd(), scene);
-                renderer.end(frames.getDrawCmd());
-                frames.getDrawCmd().endCommandBuffer();
-                )
-            }
-
-            // update the camera matrices
-            PROFILE_SCOPE("updating camera matrices",
-            camera_view = glm::lookAt(glm::vec3(5.0f * glm::sin(rotation), 2.0, 5.0f * glm::cos(rotation)), glm::vec3(0.0, 2.5f, 0.0), glm::vec3(0.0, -1.0, 0.0));
-            camera_proj = glm::perspective(90.0f, float(app.getWindow().getWidth()) / app.getWindow().getHeight(), 0.1f, 2000.0f);            
-            )
-
-            // prepare for reusing the transfer buffer
-            PROFILE_SCOPE("waiting for transfer finished",
-            frames.waitForTransferFinished();
-            transfer_buffer.reset();
-            )
-
-            // stage the matrix data in the transfer buffer
-            PROFILE_SCOPE("staging matrix data / recording transfer command",
-            renderer.loadCameraMatrices(glm::value_ptr(camera_view), glm::value_ptr(camera_proj), transfer_buffer);
-            frames.getTransferCmd().resetCommandBuffer();
-            frames.getTransferCmd().beginCommandBuffer(true);
-            transfer_buffer.completeTransfers(frames.getTransferCmd());
-            frames.getTransferCmd().endCommandBuffer();
-            )
-
-            // wait for previous frame to finish rendering before updating the uniform buffer
-            PROFILE_SCOPE("waiting for previous render finished",
-            frames.finishLastFrame();
-            )
-
-            // submit current draw command
-            PROFILE_SCOPE("submitting frame",
-            frames.submitFrame(app.getDevice(), app.getSwapChain(), true);
-            )
-
-        } else {
-
-            // recreate the swap chain
-            app.recreateSwapChain(VK_PRESENT_MODE_IMMEDIATE_KHR);
-            //app.recreateSwapChain(VK_PRESENT_MODE_FIFO_KHR);
-            renderer.recreateFramebuffers(vulkan_allocator, app.getSwapChain());
-            frames.reset();
-
-        }
-
+        camera_view = glm::lookAt(glm::vec3(5.0f * glm::sin(rotation), 2.0, 5.0f * glm::cos(rotation)), glm::vec3(0.0, 2.5f, 0.0), glm::vec3(0.0, -1.0, 0.0));
+        camera_proj = glm::perspective(90.0f, float(getWindow().getWidth()) / getWindow().getHeight(), 0.1f, 2000.0f);            
+            
         if(num_frames_since_fps > 1000) {
             num_frames_since_fps = 0;
             UND_LOG << "FPS: " << 1000.0f * 1000.0f / (millis() - last_fps_millis) << "\n";
@@ -170,28 +109,39 @@ int main() {
         }
 
         num_frames_since_fps++;
+    }
 
-        PROFILE_SCOPE("update window",
-            app.getWindow().update();
-        )
+    void transferCommands() {
+        // called after the previous frames transfer commands have finished
+
+        transfer_buffer.reset();
+
+        renderer.loadCameraMatrices(glm::value_ptr(camera_view), glm::value_ptr(camera_proj), transfer_buffer);
+        transfer_buffer.completeTransfers(getTransferCmd());
 
     }
 
-    // save performance data
-    Profiler::writeToCsvFile("performance.csv");
+    void drawCommands(int swap_image_id) {
+        // record draw commands here
+        
+        renderer.begin(getDrawCmd(), swap_image_id);
+        renderer.draw(getDrawCmd(), scene);
+        renderer.end(getDrawCmd());
+    }
 
-    // cleanup
-    app.getDevice().waitForProcessesToFinish();
+    void frameFinalization() {
+        // called after the previous frame has finished rendering
 
-    transfer_finished.cleanUp();
-    transfer_command.cleanUp();
-    transfer_buffer.cleanUp();
+    }
 
-    frames.cleanUp();
-    renderer.cleanUp(app.getSwapChain());
-    scene.cleanUp();
-    vulkan_allocator.cleanUp();
+};
 
+int main() {
+
+    App app;
+
+    app.init();
+    while(app.run());
     app.cleanUp();
 
     return 0;

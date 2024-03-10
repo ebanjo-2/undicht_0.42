@@ -43,7 +43,7 @@ namespace undicht {
         /// resetCommandBuffer() and beginCommandBuffer() still has to be called on the transfer and draw commands
         /// @return the id of the acquired swap image
 
-        _frame_id = (_frame_id + 1) % 2;
+        _frame_id = getNextFrameID();
 
         _swap_images[_frame_id] = swap_chain.acquireNextSwapImage(_swap_images_ready[_frame_id].getAsSignal());
 
@@ -64,6 +64,7 @@ namespace undicht {
         /// (uploading data to transfer buffers is fine before this)
 
         // no previous frame
+        if(_swap_images[getPreviousFrameID()] == -1) return;
         if(!_render_finished_fence.isInUse()) return;
 
         // if this takes a significant amount of time, the cpu was faster than the gpu
@@ -91,7 +92,7 @@ namespace undicht {
         }
 
         // present the image once it is ready
-        device.presentOnPresentQueue(swap_chain.getSwapchain(), _swap_images[_frame_id], {_render_finished.getAsSignal()});
+        device.presentOnPresentQueue(swap_chain.getSwapchain(), _swap_images[_frame_id], {_render_finished.getAsWaitOn()});
 
     }
 
@@ -148,6 +149,21 @@ namespace undicht {
         /// @return the draw command buffer for the frame currently in preparation
 
         return _draw_cmds[_frame_id];
+    }
+
+    uint32_t FrameManager::getPreviousFrameID() const {
+
+        return (_frame_id + 1) % 2;
+    }
+
+    uint32_t FrameManager::getCurrentFrameID() const {
+
+        return _frame_id;
+    }
+
+    uint32_t FrameManager::getNextFrameID() const {
+
+        return (_frame_id + 1) % 2;
     }
 
 } // undicht

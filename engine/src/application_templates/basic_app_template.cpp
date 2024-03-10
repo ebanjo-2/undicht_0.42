@@ -83,6 +83,7 @@ namespace undicht {
         } else {
 
             recreateSwapChain();
+            FrameManager::reset();
         }
 
 
@@ -115,7 +116,7 @@ namespace undicht {
 
         _default_render_pass.addAttachment(getSwapChain().getSwapImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
         _default_render_pass.addAttachment(translate(UND_DEPTH32F), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-        _default_render_pass.addSubPass({0}, {VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL});
+        _default_render_pass.addSubPass({0, 1}, {VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL});
         _default_render_pass.init(getDevice().getDevice());
     }
 
@@ -192,6 +193,9 @@ namespace undicht {
     }
     
     void BasicAppTemplate::recreateSwapChain() {
+
+        // reset semaphores
+        _swap_images_ready[_frame_id].reset();
         
         // recreate the swap chain
         Application::recreateSwapChain(_present_mode);

@@ -1,5 +1,6 @@
 #include "physics_renderer.h"
 #include "glm/gtc/type_ptr.hpp"
+#include "debug.h"
 
 using namespace undicht;
 using namespace graphics;

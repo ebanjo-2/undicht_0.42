@@ -57,7 +57,7 @@ namespace undicht {
         virtual void setupDefaultFramebuffers();
 
         // functions for building a frame
-        virtual void framePreperation(); // called before the old frame is finished on the gpu
+        virtual void framePreperation(); // called while the old frame is still being processed on the gpu
         virtual void transferCommands(); // called after the previous frames transfer commands have finished
         virtual void drawCommands(int swap_image_id); // record draw commands here
         virtual void frameFinalization(); // (run must be called with wait_for_previous_frame = true) called after the previous frame has finished rendering

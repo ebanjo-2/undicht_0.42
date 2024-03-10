@@ -52,7 +52,7 @@ namespace undicht {
             void processAssimpScene(const aiScene* assimp_scene, graphics::SceneGroup& load_to, const std::string& directory);
 
 		        // functions to process meshes
-            void processAssimpMesh(const aiMesh* assimp_mesh, graphics::Mesh& load_to, const std::vector<graphics::Material>& materials);
+            void processAssimpMesh(const aiMesh* assimp_mesh, graphics::Mesh& load_to, const std::vector<graphics::Material>::iterator& materials);
             void processAssimpVertices(const aiMesh* assimp_mesh, graphics::Mesh& load_to);        
             void processAssimpFaces(const aiMesh* assimp_mesh, graphics::Mesh& load_to);
             void processAssimpMeshBones(const aiMesh* assimp_mesh, graphics::Mesh& load_to);

@@ -87,7 +87,7 @@ namespace undicht {
             for(int i = 0; i < assimp_scene->mNumMeshes; i++) {
 
                 const aiMesh* ai_mesh = assimp_scene->mMeshes[i];
-                processAssimpMesh(ai_mesh, load_to.addMesh(ai_mesh->mName.C_Str()), load_to.getMaterials());
+                processAssimpMesh(ai_mesh, load_to.addMesh(ai_mesh->mName.C_Str()), load_to.getMaterials().end() - assimp_scene->mNumMaterials);
             }
 
             // process all nodes (recursive)
@@ -110,7 +110,7 @@ namespace undicht {
 
         //////////////////////////////////// functions to process meshes //////////////////////////////////////
 
-        void SceneLoader::processAssimpMesh(const aiMesh* assimp_mesh, Mesh& load_to, const std::vector<Material>& materials) {
+        void SceneLoader::processAssimpMesh(const aiMesh* assimp_mesh, Mesh& load_to, const std::vector<Material>::iterator& materials) {
             
             // init the mesh
             load_to.init(*_device, *_allocator);

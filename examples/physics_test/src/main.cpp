@@ -34,7 +34,7 @@ int main() {
     glm::mat4 camera_view, camera_proj;
     camera_proj = cam.getProjection(90.0f, float(app.getWindow().getWidth()) / app.getWindow().getHeight());
 
-    while(!app.getWindow().shouldClose()) {
+    while((!app.getWindow().shouldClose()) && (!app.getWindow().isKeyPressed(GLFW_KEY_ESCAPE))) {
 
         if(!app.getWindow().isKeyPressed(GLFW_KEY_P))
             scene.updatePhysics();

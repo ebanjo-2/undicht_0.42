@@ -94,6 +94,7 @@ void PhysicsScene::updateGraphics(const LogicalDevice& device, vma::VulkanMemory
         glm::mat4 model_matrix = glm::translate(position) * glm::toMat4(rotation) * glm::scale(_body_half_sizes.at(i));
 
         scene_group.getRootNode().getChildNode(node_name)->setLocalTransformation(model_matrix);
+        scene_group.updateGlobalTransformations(); // should really be only called once
         scene_group.getRootNode().getChildNode(node_name)->updateUniformBuffer(transfer_buffer, scene_group);
     }
 

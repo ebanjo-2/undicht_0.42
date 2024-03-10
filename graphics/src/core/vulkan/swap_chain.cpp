@@ -81,9 +81,9 @@ namespace undicht {
             /// @return the id of the newly acquired image, -1 if no image could be acquired (swapchain needs to be recreated)
 
             uint32_t next_image;
-            VkResult result = vkAcquireNextImageKHR(_device_handle, _swap_chain, 1000, signal_sem, signal_fen, &next_image);
+            VkResult result = vkAcquireNextImageKHR(_device_handle, _swap_chain, UINT64_MAX, signal_sem, signal_fen, &next_image);
 
-            if(result == VK_ERROR_OUT_OF_DATE_KHR) {
+            if(result != VK_SUCCESS) {
                 UND_WARNING << "swapchain is out of date \n";
                 return -1;
             }

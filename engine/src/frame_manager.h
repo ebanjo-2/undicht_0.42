@@ -84,6 +84,10 @@ namespace undicht {
         /// @return the draw command buffer for the frame currently in preparation
         vulkan::CommandBuffer& getDrawCmd();
 
+        uint32_t getPreviousFrameID() const;
+        uint32_t getCurrentFrameID() const;
+        uint32_t getNextFrameID() const;
+
     };
 
 } // undicht
