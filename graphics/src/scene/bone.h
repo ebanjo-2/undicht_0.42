@@ -57,7 +57,7 @@ namespace undicht {
 
             /// Bone names have to be unique, 
             /// so if the bone name was already used
-            /// nullptr will be returned
+            /// that bone will be returned instead
             Bone* addChildBone(const std::string& name);
             Bone* findChildBone(const std::string& name, bool search_recursive = true);
             bool removeChildBone(const std::string& name); // @return false, if the child node wasnt found (not recursive!)

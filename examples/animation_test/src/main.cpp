@@ -81,10 +81,17 @@ class AnimationTest : public BasicAppTemplate {
 
     void framePreperation() {
         // called before the old frame is finished on the gpu
-        
+
+        // show / hide the cursor
+        if(getWindow().isKeyPressed(GLFW_KEY_LEFT_ALT))
+            getWindow().setCursorEnabled(false);
+        else
+            getWindow().setCursorEnabled(true);
+
         // animations
-        Bone* bone = _scene.getGroup("animation")->getBone("Head");
-        bone->setLocalMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0,-1,0)));
+        //Bone* bone = _scene.getGroup("animation")->getBone("Head");
+        //bone->setLocalMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0,-1,0)));
+        _scene.updateAnimations(glfwGetTime());
 
         // update bone matrices
         _scene.updateBoneMatrices();
@@ -101,7 +108,6 @@ class AnimationTest : public BasicAppTemplate {
         _scene.updateNodeUBOs(_transfer_buffer);
 
         // update the camera matrices
-        getWindow().setCursorEnabled(false);
         _cam.update(getWindow());
         glm::mat4 cam_view = _cam.getView();
         glm::mat4 cam_proj = _cam.getProjection(100.0f, float(getWindow().getWidth()) / getWindow().getHeight());

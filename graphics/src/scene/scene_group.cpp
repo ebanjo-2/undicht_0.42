@@ -167,6 +167,13 @@ namespace undicht {
 
             _root_node.updateGlobalTransformation(glm::mat4(1.0f));
         }
+        
+        void SceneGroup::updateAnimations(double time) {
+            
+            for(Animation& a : _animations)
+                a.update(time, *this);
+
+        }
 
     } // graphics
 

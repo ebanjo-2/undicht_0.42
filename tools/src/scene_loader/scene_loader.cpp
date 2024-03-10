@@ -301,17 +301,21 @@ namespace undicht {
             // recursivly processing the child nodes
             for(unsigned int i = 0; i < assimp_node->mNumChildren; i++) {
 
+                // is it a bone node?
+                if(_bone_names.find(assimp_node->mChildren[i]->mName.C_Str()) != _bone_names.end()) {
+                    // this node is the root node of a skeleton
+                    Skeleton* skeleton = scene_group.getSkeleton(assimp_node->mName.C_Str());
+                    if(!skeleton) skeleton = &scene_group.addSkeleton(assimp_node->mName.C_Str());
+                    processAssimpBoneNode(assimp_node, skeleton->getRootBone());
+                    continue;
+                }
+
                 // if a mesh gets stored, the node will be reinitialized with vulkan objects
                 // making sure that the node has a unique name
                 std::string node_name = assimp_node->mChildren[i]->mName.C_Str();
                 if(load_to.getChildNode(node_name)) { node_name = node_name + " " + toStr(i);}
 
-                // if the node represents a bone, it must be the root bone of a new skeleton
-                if(_bone_names.find(node_name) != _bone_names.end()) {
-                    processAssimpBoneNode(assimp_node->mChildren[i], scene_group.addSkeleton(assimp_node->mName.C_Str()).getRootBone());
-                } else { // a "normal" node
-                    processAssimpNode(assimp_node->mChildren[i], load_to.addChildNode(node_name), scene_group);
-                }
+                processAssimpNode(assimp_node->mChildren[i], load_to.addChildNode(node_name), scene_group);
 
             }
 
@@ -342,9 +346,38 @@ namespace undicht {
 
             load_to.init();
             load_to.setName(std::string(assimp_animation->mName.C_Str()));
+            load_to.setDuration(assimp_animation->mDuration);
+            load_to.setTicksPerSecond(assimp_animation->mTicksPerSecond);
+
+            for(int i = 0; i < assimp_animation->mNumChannels; i++) {
+                
+                aiNodeAnim* assimp_node_anim = assimp_animation->mChannels[i];
+                processAssimpNodeAnimation(assimp_node_anim, load_to.addNodeAnimation(assimp_node_anim->mNodeName.C_Str()));
+            }
 
             UND_LOG << "loaded animation " << '"' << load_to.getName() << '"' << "\n";
 
+        }
+
+        void SceneLoader::processAssimpNodeAnimation(const aiNodeAnim* assimp_node_animation, graphics::NodeAnimation& load_to) {
+
+            for(int i = 0; i < assimp_node_animation->mNumPositionKeys; i++) {
+                
+                aiVectorKey pos_key = assimp_node_animation->mPositionKeys[i];
+                load_to.addPositionKey(pos_key.mTime, glm::vec3(pos_key.mValue.x, pos_key.mValue.y, pos_key.mValue.z));
+            }
+
+            for(int i = 0; i < assimp_node_animation->mNumRotationKeys; i++) {
+                
+                aiQuatKey rot_key = assimp_node_animation->mRotationKeys[i];
+                load_to.addRotationKey(rot_key.mTime, glm::quat(rot_key.mValue.w, rot_key.mValue.x, rot_key.mValue.y, rot_key.mValue.z));
+            }            
+            
+            for(int i = 0; i < assimp_node_animation->mNumScalingKeys; i++) {
+                
+                aiVectorKey scl_key = assimp_node_animation->mPositionKeys[i];
+                load_to.addScaleKey(scl_key.mTime, glm::vec3(scl_key.mValue.x, scl_key.mValue.y, scl_key.mValue.z));
+            }
         }
 
     } // tools

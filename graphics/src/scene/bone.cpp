@@ -94,12 +94,12 @@ namespace undicht {
         Bone* Bone::addChildBone(const std::string& name) {
             /// Bone names have to be unique, 
             /// so if the bone name was already used
-            /// nullptr will be returned
+            /// it will be returned instead
             
             std::vector<Bone>::iterator pos = std::find(_child_bones.begin(), _child_bones.end(), name);
 
             // bone name is already used
-            if(pos != _child_bones.end()) return nullptr;
+            if(pos != _child_bones.end()) return &*pos;
 
             _child_bones.emplace_back(Bone());
             _child_bones.back().setName(name);

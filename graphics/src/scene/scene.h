@@ -43,6 +43,7 @@ namespace undicht {
 			void updateNodeUBOs(vulkan::TransferBuffer& transfer_buffer);
             void updateBoneMatrices();
             void updateGlobalTransformations();
+			void updateAnimations(double time);
 
 		};
 

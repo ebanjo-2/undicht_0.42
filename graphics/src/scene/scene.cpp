@@ -122,6 +122,13 @@ namespace undicht {
 
         }
 
+		void Scene::updateAnimations(double time) {
+            
+            for(SceneGroup& group : _groups)
+                group.updateAnimations(time);
+
+        }
+
     } // graphics
 
 } // undicht

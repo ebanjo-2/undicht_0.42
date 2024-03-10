@@ -8,6 +8,7 @@
 #include "scene/node.h"
 #include "scene/animation.h"
 #include "scene/skeleton.h"
+#include "scene/node_animation.h"
 
 #include "string"
 #include "vector"
@@ -69,7 +70,7 @@ namespace undicht {
 
             // functions to process animations
             void processAssimpAnimation(const aiAnimation* assimp_animation, graphics::Animation& load_to);
-
+            void processAssimpNodeAnimation(const aiNodeAnim* assimp_node_animation, graphics::NodeAnimation& load_to);
         };
 
 	} // tools
