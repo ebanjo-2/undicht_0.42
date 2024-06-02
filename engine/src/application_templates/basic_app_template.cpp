@@ -1,6 +1,7 @@
 #include "basic_app_template.h"
 #include "types.h"
 #include "core/vulkan/formats.h"
+#include "profiler.h"
 
 namespace undicht {
 
@@ -44,40 +45,51 @@ namespace undicht {
         /// @return true, as long as the application wants to run (use it like this: while(app.run()); )
 
         // the structure of a frame should look like this:
+        Profiler p;
 
         // Step 1: run code that doesnt use gpu resources while the old frame is still processed on the gpu
+        p.start("frame preperation");
         framePreperation();
 
+
         // Step 2: accqire a new swap image
+        p.start("get swap image");
         uint32_t swap_image_id = FrameManager::prepareNextFrame(_swap_chain);
 
         // Step 3: wait for the transfer operations of the previous frame to finish
         // in order to be able to reuse the resources for transferring to / from the gpu
+        p.start("wait for transfer finished");
         FrameManager::waitForTransferFinished();
 
         if(swap_image_id != -1) {
 
             // Step 4: reset & begin the command buffers (yes, every frame)
+            p.start("reset and begin command buffers");
             getTransferCmd().resetCommandBuffer();
             getTransferCmd().beginCommandBuffer(true);
             getDrawCmd().resetCommandBuffer();
             getDrawCmd().beginCommandBuffer(true);
 
             // Step 5: record transfer commands
+            p.start("record transfer commands");
             transferCommands();
 
             // Step 6: record draw commands
+            p.start("record draw commands");
             drawCommands(swap_image_id);
 
             // Step 7: end command buffers
+            p.start("end command buffers");
             getTransferCmd().endCommandBuffer();
             getDrawCmd().endCommandBuffer();
 
             // Step 8: wait for previous frame to finish
+            p.start("wait for previous frame to finish");
             FrameManager::finishLastFrame();
             frameFinalization();
 
             // Step 9: submit current frame to the queue
+            p.start("submit current frame");
             FrameManager::submitFrame(getDevice(), _swap_chain, true);
 
         } else {
@@ -86,7 +98,7 @@ namespace undicht {
             FrameManager::reset();
         }
 
-
+        p.start("update window");
         getWindow().update();
         return !getWindow().shouldClose();
     }

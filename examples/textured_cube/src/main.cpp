@@ -6,6 +6,7 @@
 #include "scene_loader/scene_loader.h"
 #include "scene/renderer/scene_renderer.h"
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "glm/glm.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -30,10 +31,8 @@ class App : public BasicAppTemplate {
     glm::mat4 camera_proj;
     float rotation = 0.0f;
 
-    // frame profiling
-    uint32_t last_fps_millis = millis();
+    // for calculating the frame time
     uint32_t last_frame_micros = micros();
-    uint32_t num_frames_since_fps = 0;
 
   public:
 
@@ -57,8 +56,13 @@ class App : public BasicAppTemplate {
         SceneLoader scene_loader;
         scene_loader.setInitObjects(getDevice(), _vulkan_allocator, transfer_buffer, renderer.getMaterialDescriptorCache(), renderer.getNodeDescriptorCache(), renderer.getMaterialSampler());
         scene_loader.importScene("res/tex_cube.dae", scene.addGroup("cube"));
+        scene_loader.importScene("res/kos.dae", scene.addGroup("kos"));
         scene_loader.importScene("res/sponza/sponza.obj", scene.addGroup("sponza"));
-        
+
+        scene.getGroup("cube")->getRootNode().setLocalTransformation(glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f)));
+        scene.updateGlobalTransformations();
+        scene.updateNodeUBOs(transfer_buffer);
+
         // transferring the scene data
         CommandBuffer initial_transfer_cmd;
         initial_transfer_cmd.init(getDevice().getDevice(), getDevice().getGraphicsCmdPool());
@@ -75,6 +79,8 @@ class App : public BasicAppTemplate {
     }
 
     void cleanUp() {
+
+        Profiler::writeToCsvFile("./profile.csv");
 
         getDevice().waitForProcessesToFinish();
 
@@ -98,17 +104,10 @@ class App : public BasicAppTemplate {
         rotation += (micros() - last_frame_micros) / 3000000.0f;
         last_frame_micros = micros();
 
-        camera_view = glm::lookAt(glm::vec3(5.0f * glm::sin(rotation), 2.0, 5.0f * glm::cos(rotation)), glm::vec3(0.0, 2.5f, 0.0), glm::vec3(0.0, -1.0, 0.0));
+        camera_view = glm::lookAt(glm::vec3(5.0f * glm::sin(rotation), 2.0, 5.0f * glm::cos(rotation)), glm::vec3(0.0, 2.5f, 0.0), glm::vec3(0.0, 1.0, 0.0));
         camera_proj = glm::perspective(90.0f, float(getWindow().getWidth()) / getWindow().getHeight(), 0.1f, 2000.0f);            
-            
-        if(num_frames_since_fps > 1000) {
-            num_frames_since_fps = 0;
-            UND_LOG << "FPS: " << 1000.0f * 1000.0f / (millis() - last_fps_millis) << "\n";
-            last_fps_millis = millis();
-            Profiler::enableProfiler(false); // only record first 1000 frames
-        }
-
-        num_frames_since_fps++;
+        camera_proj[1][1] *= -1; // since -y is up in vulkan ndc
+        
     }
 
     void transferCommands() {
@@ -123,9 +122,13 @@ class App : public BasicAppTemplate {
 
     void drawCommands(int swap_image_id) {
         // record draw commands here
-        
+
+        Profiler p;
+        p.start("  renderer.begin");
         renderer.begin(getDrawCmd(), swap_image_id);
+        p.start("  renderer.draw");
         renderer.draw(getDrawCmd(), scene);
+        p.start("  renderer.end");
         renderer.end(getDrawCmd());
     }
 
@@ -139,9 +142,24 @@ class App : public BasicAppTemplate {
 int main() {
 
     App app;
-
     app.init();
-    while(app.run());
+
+    uint32_t start_time = millis();
+    uint32_t frame_count = 0;
+
+    while(app.run()) {
+
+        if(frame_count == 100) {
+            UND_LOG << "FPS: " << 100.0f * 1000.0f / (millis() - start_time) << "\n";
+            frame_count = 0;
+            start_time = millis();
+            Profiler::enableProfiler(false);
+        }
+
+        frame_count++;
+    }
+
+
     app.cleanUp();
 
     return 0;

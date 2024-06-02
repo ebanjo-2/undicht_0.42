@@ -37,7 +37,7 @@ class AnimationTest : public BasicAppTemplate {
         _load_cmd_buffer.init(getDevice().getDevice(), getDevice().getGraphicsCmdPool());
         _load_cmd_buffer.beginCommandBuffer(true);
 
-        _transfer_buffer.init(_vulkan_allocator, {getDevice().getGraphicsQueueFamily()}, 10000000); // reserve 10 Mb
+        _transfer_buffer.init(_vulkan_allocator, {getDevice().getGraphicsQueueFamily()}, 100000000); // reserve 10 Mb
         _renderer.init(getDevice(), getSwapChain(), _vulkan_allocator);
 
         SceneLoader loader;
@@ -45,18 +45,17 @@ class AnimationTest : public BasicAppTemplate {
         _scene.init();
         // the model.dae file (and diffuse texture) are taken from the ThinMatrix tutorial github:
         // https://github.com/TheThinMatrix/OpenGL-Animation
-        loader.importScene("res/model.dae", _scene.addGroup("animation"));
+        loader.importScene("res/model2.dae", _scene.addGroup("animation"));
         loader.importScene("res/bob/boblampclean.md5mesh", _scene.addGroup("bob_lamp"));
         loader.importScene("res/tex_cube.dae", _scene.addGroup("cube"));
+        loader.importScene("res/kos.dae", _scene.addGroup("kos"));
         _transfer_buffer.completeTransfers(_load_cmd_buffer);
         _transfer_buffer.reset();
         _scene.genMipMaps(_load_cmd_buffer);
 
-
         // move and rotate the model to get a better look
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0f));
-        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
         _scene.getGroup("animation")->getRootNode().setLocalTransformation(model);
@@ -91,7 +90,14 @@ class AnimationTest : public BasicAppTemplate {
         // animations
         //Bone* bone = _scene.getGroup("animation")->getBone("Head");
         //bone->setLocalMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0,-1,0)));
-        _scene.updateAnimations(glfwGetTime());
+        //_scene.updateAnimations(glfwGetTime());
+        SceneGroup* anim_group = _scene.getGroup("animation");
+        if(anim_group) {
+            Animation* anim = anim_group->getAnimation("Armature");
+            if(anim) {
+                anim->update(glfwGetTime(), *anim_group);
+            }
+        }
 
         // update bone matrices
         _scene.updateBoneMatrices();

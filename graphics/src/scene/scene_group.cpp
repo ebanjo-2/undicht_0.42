@@ -98,38 +98,22 @@ namespace undicht {
             /** @brief tries to find a mesh with the given name
             * @return nullptr, if no mesh with a matching mesh_name could be found */
 
-            for(Mesh& m : _meshes) 
-                if(!m.getName().compare(mesh_name))
-                    return &m;
-
-            return nullptr;
+            return getMesh(getMeshID(mesh_name));
         }
 
         Material* SceneGroup::getMaterial(const std::string& mat_name) {
 
-            for(Material& m : _materials) 
-                if(!m.getName().compare(mat_name))
-                    return &m;
-
-            return nullptr;
+            return getMaterial(getMaterialID(mat_name));
         }
 
         Animation* SceneGroup::getAnimation(const std::string& anim_name) {
             
-            for(Animation& a : _animations) 
-                if(!a.getName().compare(anim_name))
-                    return &a;
-
-            return nullptr;
+            return getAnimation(getAnimationID(anim_name));
         }
 
         Skeleton* SceneGroup::getSkeleton(const std::string& skel_name) {
             
-            for(Skeleton& s : _skeletons) 
-                if(!s.getName().compare(skel_name))
-                    return &s;
-
-            return nullptr;
+            return getSkeleton(getSkeletonID(skel_name));
         }
 
         Bone* SceneGroup::getBone(const std::string& bone_name) {
@@ -142,6 +126,70 @@ namespace undicht {
 
             return nullptr;
         } 
+
+        uint32_t SceneGroup::getMeshID(const std::string& mesh_name) {
+
+            for(int i = 0; i < _meshes.size(); i++)
+                if(!_meshes[i].getName().compare(mesh_name))
+                    return i;
+
+            return 0xFFFFFFFF;
+        }
+
+        uint32_t SceneGroup::getMaterialID(const std::string& mat_name) {
+            
+            for(int i = 0; i < _materials.size(); i++)
+                if(!_materials[i].getName().compare(mat_name))
+                    return i;
+
+            return 0xFFFFFFFF;
+        }
+
+        uint32_t SceneGroup::getAnimationID(const std::string& anim_name) {
+            
+            for(int i = 0; i < _animations.size(); i++)
+                if(!_animations[i].getName().compare(anim_name))
+                    return i;
+
+            return 0xFFFFFFFF;
+        }
+
+        uint32_t SceneGroup::getSkeletonID(const std::string& skel_name) {
+            
+            for(int i = 0; i < _skeletons.size(); i++)
+                if(!_skeletons[i].getName().compare(skel_name))
+                    return i;
+
+            return 0xFFFFFFFF;
+        }
+
+        Mesh* SceneGroup::getMesh(uint32_t id) {
+
+            if(id < _meshes.size()) return &_meshes[id];
+
+            return nullptr;
+        }
+
+        Material* SceneGroup::getMaterial(uint32_t id) {
+            
+            if(id < _materials.size()) return &_materials[id];
+
+            return nullptr;
+        }
+
+        Animation* SceneGroup::getAnimation(uint32_t id) {
+            
+            if(id < _animations.size()) return &_animations[id];
+
+            return nullptr;
+        }
+
+        Skeleton* SceneGroup::getSkeleton(uint32_t id) {
+            
+            if(id < _skeletons.size()) return &_skeletons[id];
+
+            return nullptr;
+        }
 
         void SceneGroup::genMipMaps(vulkan::CommandBuffer& cmd) {
             // records the commands to generate the mip maps

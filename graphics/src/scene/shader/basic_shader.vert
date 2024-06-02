@@ -19,12 +19,12 @@ layout(set = 2, binding = 0) uniform NodeUBO {
 
 void main() {
 
-		mat3 rotation = mat3(node.model);
+	mat3 rotation = mat3(node.model);
 
     uv = aUV.xy;
     normal = rotation * aNormal;
 
-		// output the position of each vertex
-		gl_Position = cam.proj * cam.view * node.model * vec4(aPos, 1.0f);
-
+	// output the position of each vertex
+	gl_Position = cam.proj * cam.view * node.model * vec4(aPos, 1.0f);
+	//gl_Position = cam.proj * cam.view * vec4(aPos, 1.0f);
 }

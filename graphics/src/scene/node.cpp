@@ -19,7 +19,7 @@ namespace undicht {
             // init without vulkan objects
 
             _local_transformation = glm::mat4(1.0f);
-        } 
+        }
 
         void Node::init(const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& descriptor_cache) {
             
@@ -138,9 +138,12 @@ namespace undicht {
 
         }   
 
-        const std::string& Node::getMesh() const {
+        Mesh* Node::getMesh(SceneGroup& scene) {
 
-            return _mesh;
+            if(_mesh_id == 0xFFFFFFFF)
+                _mesh_id = scene.getMeshID(_mesh);
+
+            return scene.getMesh(_mesh_id);
         }
 
         void Node::setLocalTransformation(const glm::mat4& transformation) {

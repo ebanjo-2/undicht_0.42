@@ -59,6 +59,20 @@ namespace undicht {
             Skeleton* getSkeleton(const std::string& skel_name);
             Bone* getBone(const std::string& bone_name); // bone names should be unique across all skeletons
 
+            /** @return a unique id, with which the resource can be accessed in an efficient way 
+             * will return 0xFFFFFFFF if no resource with the fitting name was found 
+             * the id will not change for the resource until cleanUp() is called or the resource is removed */
+            uint32_t getMeshID(const std::string& mesh_name);
+            uint32_t getMaterialID(const std::string& mat_name);
+            uint32_t getAnimationID(const std::string& anim_name);
+            uint32_t getSkeletonID(const std::string& skel_name);
+
+            /** @brief access resources faster using an id */
+            Mesh* getMesh(uint32_t id);
+            Material* getMaterial(uint32_t id);
+            Animation* getAnimation(uint32_t id);
+            Skeleton* getSkeleton(uint32_t id);
+
             // records the commands to generate the mip maps
 			// for all textures of the materials
             void genMipMaps(vulkan::CommandBuffer& cmd);

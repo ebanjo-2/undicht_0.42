@@ -23,6 +23,8 @@ namespace undicht {
     
     void Profiler::start(const std::string& task_name) {
 
+        end();
+
         if(!s_globally_enabled) return;
 
         _task_id = s_tasks.size();

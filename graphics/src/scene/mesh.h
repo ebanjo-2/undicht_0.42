@@ -12,6 +12,9 @@ namespace undicht {
 
     namespace graphics {
 
+        class Material;
+        class SceneGroup;
+
         class Mesh {
             /** contains vertices, which can have such attributes as a position or texture coordinate
              * and it contains faces, which define the way to create a mesh from the vertices
@@ -42,6 +45,7 @@ namespace undicht {
             // other attributes
             std::string _name;
             std::string _material;
+            uint32_t _material_id = 0xFFFFFFFF; // an id, with which the material can be accessed faster
             std::vector<std::string> _bones;
 
           public:
@@ -65,7 +69,7 @@ namespace undicht {
             bool getHasBones() const;
             uint32_t getVertexCount() const;
             const std::string& getName() const;
-            const std::string& getMaterial() const;
+            Material* getMaterial(SceneGroup& scene);
             const std::vector<std::string>& getBones() const;
 
             /// @return -1, if no bone with the name was found

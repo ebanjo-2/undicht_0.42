@@ -42,10 +42,10 @@ namespace undicht {
 
             // retrieve the resources used by the node
             // this renderer can only draw meshes with skeletal animation
-            Mesh* mesh = scene.getMesh(node.getMesh());
+            Mesh* mesh = node.getMesh(scene);
             if(!mesh || !mesh->getHasBones()) return 0;
              
-            Material* mat = scene.getMaterial(mesh->getMaterial());
+            Material* mat = mesh->getMaterial(scene);
             if(!mat) return 0;
             if(!mat->getTexture(Texture::Type::DIFFUSE)) return 0; // cant draw that mesh
 

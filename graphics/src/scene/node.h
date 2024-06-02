@@ -28,6 +28,7 @@ namespace undicht {
             // attributes of the Node
             std::string _name;
             std::string _mesh; // one mesh per node
+            uint32_t _mesh_id = 0xFFFFFFFF; // a faster way to access the mesh from the scene
             glm::mat4 _local_transformation; // transformation of local coord. system rel. to parent
             glm::mat4 _global_transformation; // transformation of local coord. system rel. to global system
 
@@ -55,7 +56,7 @@ namespace undicht {
             void setMesh(const std::string& mesh);
             // adds the meshes as child nodes
             void addMeshes(const std::vector<std::string>& meshes, const vulkan::LogicalDevice& device, vma::VulkanMemoryAllocator& allocator, vulkan::DescriptorSetCache& descriptor_cache);
-            const std::string& getMesh() const;
+            Mesh* getMesh(SceneGroup& scene);
 
             /// set the transformation of the nodes local coord. system
             /// relative to its parents

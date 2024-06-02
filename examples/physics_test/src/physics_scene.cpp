@@ -173,6 +173,7 @@ void PhysicsScene::initGraphics(const undicht::vulkan::LogicalDevice& device, un
     scene_loader.setInitObjects(device, allocator, transfer_buffer, material_descriptor_cache, node_descriptor_cache, sampler);
     scene_loader.importScene("res/sphere.dae", _graphics_scene.addGroup("physics"));
     scene_loader.importScene("res/cube.dae", _graphics_scene.addGroup("physics"));
+    _graphics_scene.getGroup("physics")->getRootNode().setLocalTransformation(glm::mat4(1.0f));
 
     // upload data
     transfer_command.beginCommandBuffer(true);

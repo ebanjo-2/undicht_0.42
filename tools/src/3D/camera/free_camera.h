@@ -9,8 +9,8 @@ class FreeCamera {
   protected:
 
     glm::vec3 _position = glm::vec3(0.0f);
-    float _yaw = glm::radians(90.0f);
-    float _pitch = glm::radians(90.0f);
+    float _yaw = 0.0f;
+    float _pitch = 0.0f;
 
     double _last_cursor_x = 0;
     double _last_cursor_y = 0;

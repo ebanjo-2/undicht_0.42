@@ -98,15 +98,22 @@ namespace undicht {
 
             // counting draw calls
             uint32_t draw_calls = 0;
+            Profiler p;
 
             // draw all meshes that dont have skeletal animation
+            p.start("    basic_renderer.begin");
             _basic_renderer.begin(cmd, _global_descriptor_set.getDescriptorSet());
+            p.start("    drawStatic");
             for(SceneGroup& group : scene.getGroups()) draw_calls += drawStatic(cmd, group, group.getRootNode());
+            p.start("    basic_renderer.end");
             _basic_renderer.end(cmd);
 
             // draw all meshes that do have skeletal animation
+            p.start("    basic_animation_renderer.begin");
             _basic_animation_renderer.begin(cmd, _global_descriptor_set.getDescriptorSet());
+            p.start("    drawAnimated");
             for(SceneGroup& group : scene.getGroups()) draw_calls += drawAnimated(cmd, group, group.getRootNode());
+            p.start("    basic_animation_renderer.end");
             _basic_animation_renderer.end(cmd);
 
             return draw_calls;

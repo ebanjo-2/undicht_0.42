@@ -4,6 +4,8 @@
 
 #include "core/vulkan/command_buffer.h"
 #include "core/vulkan/fence.h"
+#include "scene_group.h"
+#include "material.h"
 
 namespace undicht {
 
@@ -112,9 +114,12 @@ namespace undicht {
             return _name;
         }
 
-        const std::string& Mesh::getMaterial() const {
+        Material* Mesh::getMaterial(SceneGroup& scene) {
 
-            return _material;
+            if(_material_id == 0xFFFFFFFF)
+                _material_id = scene.getMaterialID(_material);
+
+            return scene.getMaterial(_material_id);
         }
 
         const std::vector<std::string>& Mesh::getBones() const {
